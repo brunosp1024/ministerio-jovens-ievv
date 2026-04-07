@@ -1,0 +1,88 @@
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-slate-100 p-6;
+  }
+
+  .card--hover {
+    @apply hover:shadow-md transition-shadow;
+  }
+
+  .card--clickable {
+    @apply hover:shadow-md transition-shadow cursor-pointer;
+  }
+
+  .badge-green {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800;
+  }
+
+  .badge-red {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800;
+  }
+
+  .badge-blue {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+  }
+
+  /* Stat cards */
+  .stat-card__content {
+    @apply flex items-center gap-4;
+  }
+
+  .stat-card__icon {
+    @apply p-3 rounded-lg;
+  }
+
+  .stat-card__icon-svg {
+    @apply w-6 h-6 text-white;
+  }
+
+  .stat-card__value {
+    @apply text-2xl font-bold text-slate-800;
+  }
+
+  .stat-card__label {
+    @apply text-sm text-slate-500;
+  }
+
+  /* Summary stat cards (smaller) */
+  .summary-card__content {
+    @apply flex items-center gap-3 min-w-0;
+  }
+
+  .summary-card__icon {
+    @apply p-2.5 rounded-lg shrink-0;
+  }
+
+  .summary-card__icon-svg {
+    @apply w-5 h-5 text-white;
+  }
+
+  .summary-card__value {
+    @apply text-sm font-bold text-slate-800 truncate sm:text-lg;
+  }
+
+  .summary-card__label {
+    @apply text-xs text-slate-500;
+  }
+
+  /* Period stat cards */
+  .period-card {
+    @apply card flex items-center gap-4;
+  }
+
+  .period-card__icon {
+    @apply p-3 rounded-lg;
+  }
+
+  .period-card__icon-svg {
+    @apply w-5 h-5;
+  }
+
+  .period-card__value {
+    @apply text-base sm:text-xl font-bold text-slate-800 truncate;
+  }
+
+  .period-card__label {
+    @apply text-xs text-slate-500;
+  }
+}

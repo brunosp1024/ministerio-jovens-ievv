@@ -1,0 +1,260 @@
+@layer components {
+  .page {
+    @apply space-y-6;
+  }
+
+  .page-header {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold text-slate-800 flex items-center gap-2;
+  }
+
+  .page-title__icon {
+    @apply w-6 h-6;
+  }
+
+  .page-subtitle {
+    @apply text-slate-500 text-sm mt-1;
+  }
+
+  .page-description {
+    @apply text-slate-500 mt-1;
+  }
+
+  /* Grids */
+  .stats-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
+  .summary-grid {
+    @apply grid grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+
+  .period-grid {
+    @apply grid grid-cols-1 sm:grid-cols-3 gap-4;
+  }
+
+  .cards-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4;
+  }
+
+  .dashboard-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  }
+
+  /* Empty / Loading states */
+  .empty-state {
+    @apply text-center text-slate-400 text-sm py-8;
+  }
+
+  .loading-state {
+    @apply text-center text-slate-400 py-8;
+  }
+
+  .loading-state--lg {
+    @apply text-center text-slate-400 py-12;
+  }
+
+  /* Alerts */
+  .alert-warning {
+    @apply bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3;
+  }
+
+  .alert-warning__icon {
+    @apply w-5 h-5 text-amber-600 shrink-0;
+  }
+
+  .alert-warning__title {
+    @apply font-medium text-amber-800 text-sm;
+  }
+
+  .alert-warning__text {
+    @apply text-amber-700 text-sm;
+  }
+
+  .alert-info {
+    @apply bg-blue-50 rounded-lg p-3 text-sm;
+  }
+
+  .alert-info__title {
+    @apply text-blue-800 font-medium;
+  }
+
+  .alert-info__text {
+    @apply text-blue-600;
+  }
+
+  /* Section headers */
+  .section-title {
+    @apply text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3;
+  }
+
+  .section-title--base {
+    @apply text-base font-semibold text-slate-800 mb-4;
+  }
+
+  /* Dashboard */
+  .dashboard-list {
+    @apply space-y-3;
+  }
+
+  .dashboard-list-item {
+    @apply flex items-start gap-3 p-3 rounded-lg bg-slate-50;
+  }
+
+  .dashboard-list-item--between {
+    @apply flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50;
+  }
+
+  .dashboard-list-item__icon {
+    @apply bg-blue-100 text-blue-700 p-2 rounded-lg;
+  }
+
+  .dashboard-list-item__icon-svg {
+    @apply w-4 h-4;
+  }
+
+  .dashboard-list-item__title {
+    @apply font-medium text-slate-800 text-sm;
+  }
+
+  .dashboard-list-item__subtitle {
+    @apply text-xs text-slate-500;
+  }
+
+  .dashboard-list-item__detail {
+    @apply text-xs text-slate-400;
+  }
+
+  .dashboard-list-item__label {
+    @apply text-sm text-slate-600;
+  }
+
+  .dashboard-list-item__value {
+    @apply font-semibold text-slate-800;
+  }
+
+  /* Evento card */
+  .evento-card__badges {
+    @apply flex items-center gap-2 mb-1;
+  }
+
+  .evento-card__title {
+    @apply font-semibold text-slate-800 truncate;
+  }
+
+  .evento-card__description {
+    @apply text-sm text-slate-500 mt-1 line-clamp-2;
+  }
+
+  .evento-card__meta {
+    @apply flex items-center gap-4 mt-2 text-xs text-slate-500;
+  }
+
+  .evento-card__meta-item {
+    @apply flex items-center gap-1;
+  }
+
+  .evento-card__meta-icon {
+    @apply w-3.5 h-3.5;
+  }
+
+  /* Jovens table */
+  .jovem__name {
+    @apply font-medium text-slate-800;
+  }
+
+  .jovem__email {
+    @apply text-xs text-slate-400;
+  }
+
+  .jovem__age {
+    @apply text-slate-400;
+  }
+
+  /* Financeiro filters */
+  .filter-header {
+    @apply flex items-center gap-2 mb-4;
+  }
+
+  .filter-header__icon {
+    @apply w-4 h-4 text-slate-500;
+  }
+
+  .filter-header__title {
+    @apply font-semibold text-slate-700 text-sm;
+  }
+
+  .filter-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3;
+  }
+
+  /* Ganhos section */
+  .ganhos-header {
+    @apply flex items-center gap-2 mb-4;
+  }
+
+  .ganhos-header__icon {
+    @apply w-5 h-5 text-purple-600;
+  }
+
+  /* Distribuir ganhos */
+  .distribuir__info {
+    @apply bg-blue-50 rounded-lg p-3 text-sm;
+  }
+
+  .distribuir__participants {
+    @apply space-y-2 max-h-64 overflow-y-auto;
+  }
+
+  .distribuir__participant {
+    @apply flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50;
+  }
+
+  .distribuir__checkbox {
+    @apply w-4 h-4 rounded text-blue-600;
+  }
+
+  .distribuir__footer {
+    @apply border-t border-slate-100 pt-3 flex items-center justify-between;
+  }
+
+  .distribuir__warning {
+    @apply text-xs text-red-500 mt-0.5;
+  }
+
+  /* Venda form */
+  .venda-form__items-header {
+    @apply flex items-center justify-between mb-2;
+  }
+
+  .venda-form__add-item {
+    @apply text-xs text-blue-600 hover:underline flex items-center gap-1;
+  }
+
+  .venda-form__add-icon {
+    @apply w-3 h-3;
+  }
+
+  .venda-form__item-row {
+    @apply grid grid-cols-12 gap-2 items-end;
+  }
+
+  .venda-form__item-input {
+    @apply w-full px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500;
+  }
+
+  .venda-form__remove-btn {
+    @apply p-1 text-red-400 hover:text-red-600;
+  }
+
+  .venda-form__remove-icon {
+    @apply w-4 h-4;
+  }
+
+  .venda-form__hint {
+    @apply text-xs text-slate-400 mt-1;
+  }
+}

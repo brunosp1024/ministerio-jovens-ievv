@@ -1,0 +1,117 @@
+@layer components {
+  .datepicker__trigger {
+    @apply flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm transition focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent;
+  }
+
+  .datepicker__trigger--default {
+    @apply border-slate-300 bg-white hover:border-blue-300;
+  }
+
+  .datepicker__trigger--error {
+    @apply border-red-400 bg-red-50;
+  }
+
+  .datepicker__trigger--disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  .datepicker__trigger-icon {
+    @apply h-4 w-4 shrink-0 text-slate-400;
+  }
+
+  .datepicker__trigger-text {
+    @apply min-w-0 flex-1 truncate;
+  }
+
+  .datepicker__trigger-text--filled {
+    @apply text-slate-800;
+  }
+
+  .datepicker__trigger-text--empty {
+    @apply text-slate-400;
+  }
+
+  .datepicker__trigger-badge {
+    @apply rounded-md bg-slate-100 p-1.5 text-slate-500 cursor-pointer hover:bg-slate-200 transition;
+  }
+
+  .datepicker__trigger-badge-icon {
+    @apply h-4 w-4;
+  }
+
+  .datepicker__input {
+    @apply min-w-0 flex-1 bg-transparent text-slate-800 placeholder:text-slate-400 focus:outline-none;
+  }
+
+  .datepicker__dropdown {
+    @apply absolute left-0 top-[calc(100%+0.4rem)] z-50 min-w-[280px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.16)];
+  }
+
+  .datepicker__header {
+    @apply border-b border-slate-100 bg-gradient-to-b from-[#0d1f3c] to-[#081428] px-4 py-3 text-white;
+  }
+
+  .datepicker__header-nav {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .datepicker__nav-btn {
+    @apply rounded-full bg-white/10 p-1.5 text-white transition hover:bg-white/20;
+  }
+
+  .datepicker__nav-icon {
+    @apply h-4 w-4;
+  }
+
+  .datepicker__month-label {
+    @apply text-base font-semibold capitalize;
+  }
+
+  .datepicker__calendar {
+    @apply p-4;
+  }
+
+  .datepicker__weekdays {
+    @apply mb-3 grid grid-cols-7 gap-1;
+  }
+
+  .datepicker__weekday {
+    @apply py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400;
+  }
+
+  .datepicker__days-grid {
+    @apply grid grid-cols-7 gap-1;
+  }
+
+  .datepicker__day {
+    @apply h-9 rounded-xl text-sm font-medium transition;
+  }
+
+  .datepicker__day--selected {
+    @apply bg-blue-600 text-white shadow-md shadow-blue-200;
+  }
+
+  .datepicker__day--current {
+    @apply text-slate-700 hover:bg-blue-50 hover:text-blue-700;
+  }
+
+  .datepicker__day--other {
+    @apply text-slate-300;
+  }
+
+  .datepicker__day--today {
+    @apply border border-blue-200 bg-blue-50 text-blue-700;
+  }
+
+  .datepicker__footer {
+    @apply mt-4 flex items-center justify-between gap-2;
+  }
+
+  .datepicker__clear-btn {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700;
+  }
+
+  .datepicker__today-btn {
+    @apply rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-700;
+  }
+}

@@ -1,0 +1,136 @@
+@layer components {
+  .data-table {
+    @apply w-full text-sm;
+  }
+
+  .data-table__head-row {
+    @apply border-b border-slate-100;
+  }
+
+  .data-table__head-cell {
+    @apply text-left text-xs font-semibold text-slate-500 uppercase tracking-wide pb-3 pr-4;
+  }
+
+  .data-table__head-cell--right {
+    @apply text-right text-xs font-semibold text-slate-500 uppercase tracking-wide pb-2;
+  }
+
+  .data-table__body {
+    @apply divide-y divide-slate-50;
+  }
+
+  .data-table__row {
+    @apply hover:bg-slate-50 transition-colors;
+  }
+
+  .data-table__cell {
+    @apply py-3 pr-4 text-slate-600;
+  }
+
+  .data-table__cell--right {
+    @apply py-2.5 text-right;
+  }
+
+  .data-table__avatar {
+    @apply w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs shrink-0;
+  }
+
+  .data-table__avatar--blue {
+    @apply bg-blue-100 text-blue-700;
+  }
+
+  .data-table__avatar--purple {
+    @apply bg-purple-100 text-purple-700;
+  }
+
+  .data-table__avatar--sm {
+    @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold;
+  }
+
+  .action-btn {
+    @apply p-1.5 rounded-lg text-slate-400 transition-colors;
+  }
+
+  .action-btn--edit {
+    @apply hover:text-blue-600 hover:bg-blue-50;
+  }
+
+  .action-btn--delete {
+    @apply hover:text-red-600 hover:bg-red-50;
+  }
+
+  .action-btn--distribute {
+    @apply hover:text-purple-600 hover:bg-purple-50;
+  }
+
+  /* Venda items (expandable rows) */
+  .venda-item {
+    @apply border border-slate-100 rounded-xl overflow-hidden;
+  }
+
+  .venda-item__header {
+    @apply flex items-center justify-between px-4 py-3 bg-slate-50 cursor-pointer;
+  }
+
+  .venda-item__title {
+    @apply font-medium text-slate-800 text-sm;
+  }
+
+  .venda-item__meta {
+    @apply flex items-center gap-3 mt-0.5 text-xs text-slate-500;
+  }
+
+  .venda-item__meta--invested {
+    @apply text-red-600;
+  }
+
+  .venda-item__meta--earned {
+    @apply text-green-600;
+  }
+
+  .venda-item__details {
+    @apply px-4 py-3 border-t border-slate-100;
+  }
+
+  .venda-item__details-title {
+    @apply text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2;
+  }
+
+  .venda-item__details-footer {
+    @apply flex justify-between mt-2 text-xs text-slate-500 pt-2 border-t border-slate-100;
+  }
+
+  /* Inner table for venda items */
+  .venda-table__head-cell {
+    @apply text-xs text-slate-400 border-b border-slate-100;
+  }
+
+  .venda-table__row {
+    @apply border-b border-slate-50;
+  }
+
+  .venda-table__cell {
+    @apply py-1.5 text-slate-700;
+  }
+
+  .venda-table__cell--right {
+    @apply py-1.5 text-right text-slate-600;
+  }
+
+  .venda-table__cell--total {
+    @apply py-1.5 text-right font-medium text-slate-800;
+  }
+
+  /* Ganhos mensais footer */
+  .data-table__footer-row {
+    @apply border-t-2 border-slate-200;
+  }
+
+  .data-table__footer-cell {
+    @apply pt-2 font-bold text-slate-800;
+  }
+
+  .data-table__footer-cell--right {
+    @apply pt-2 text-right font-bold text-green-600;
+  }
+}

@@ -1,0 +1,15 @@
+@import "../styles/base.css";
+@import "../styles/layout.css";
+@import "../styles/sidebar.css";
+@import "../styles/navbar.css";
+@import "../styles/buttons.css";
+@import "../styles/forms.css";
+@import "../styles/modal.css";
+@import "../styles/datepicker.css";
+@import "../styles/cards.css";
+@import "../styles/tables.css";
+@import "../styles/pages.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

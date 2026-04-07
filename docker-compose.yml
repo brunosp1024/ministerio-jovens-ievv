@@ -1,0 +1,91 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-verbo_da_vida}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/verbo_da_vida
+      DATABASE_URL_SYNC: postgresql://postgres:postgres@db:5432/verbo_da_vida
+      ALLOWED_ORIGINS: '["http://localhost:3000"]'
+      EVOLUTION_API_URL: http://evolution-api:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  evolution-api:
+    profiles:
+      - whatsapp
+    image: evoapicloud/evolution-api:v2.3.7
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution_instances:/evolution/instances
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    profiles:
+      - whatsapp
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build: ./frontend
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: ${TZ:-America/Sao_Paulo}
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - ./frontend/node_modules:/app/node_modules
+      - ./frontend/.next:/app/.next
+    command: >
+      sh -c "mkdir -p node_modules .next && npm install && npm run dev"
+
+volumes:
+  pgdata:
+  evolution_instances:
+  redis_data:
