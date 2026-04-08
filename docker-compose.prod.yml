@@ -2,16 +2,13 @@ services:
   db:
     image: postgres:16-alpine
     restart: always
-    environment:
-      TZ: ${TZ:-America/Sao_Paulo}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env.production
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,11 +22,6 @@ services:
     restart: always
     env_file:
       - .env.production
-    environment:
-      TZ: ${TZ:-America/Sao_Paulo}
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      DATABASE_URL_SYNC: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      ENVIRONMENT: production
     depends_on:
       db:
         condition: service_healthy
@@ -47,10 +39,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
     restart: always
-    environment:
-      TZ: ${TZ:-America/Sao_Paulo}
+    env_file:
+      - .env.production
     depends_on:
       - backend
     networks:
@@ -63,8 +55,8 @@ services:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-    environment:
-      DOMAIN: ${DOMAIN:-localhost}
+    env_file:
+      - .env.production
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -82,8 +74,6 @@ services:
       - whatsapp
     image: evoapicloud/evolution-api:v2.3.7
     restart: always
-    environment:
-      TZ: ${TZ:-America/Sao_Paulo}
     env_file:
       - .env.production
     depends_on:
@@ -99,6 +89,8 @@ services:
       - whatsapp
     image: redis:7-alpine
     restart: always
+    env_file:
+      - .env.production
     command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - redis_data:/data

@@ -27,6 +27,9 @@ sudo usermod -aG docker "$USER"
 echo "=== Instalando Docker Compose plugin ==="
 sudo apt-get install -y docker-compose-plugin
 
+echo "=== Instalando utilitários de persistência do firewall ==="
+sudo apt-get install -y iptables-persistent
+
 echo "=== Abrindo portas no firewall (iptables) ==="
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 443 -j ACCEPT

@@ -27,7 +27,7 @@ verbo-da-vida/
 │       ├── services/              # Camada de API (axios)
 │       ├── types/                 # Tipos TypeScript
 │       └── lib/                   # Utils, Providers
-├── whatsapp-webjs/                # Sidecar Node para envio via WhatsApp Web
+├── whatsapp-webjs/                # Serviço Node para envio via WhatsApp Web (dockerizado)
 └── docker-compose.yml
 ```
 
@@ -40,7 +40,7 @@ verbo-da-vida/
 cd verbo-da-vida
 
 # 2. Copie o .env
-cp backend/.env.example backend/.env
+cp .env.example .env
 
 # 3. Suba tudo
 docker-compose up --build
@@ -48,13 +48,37 @@ docker-compose up --build
 
 No fluxo Docker de desenvolvimento, o frontend instala dependências em `frontend/node_modules` e usa `frontend/.next` no host. Como o container roda com o mesmo UID/GID do usuário local, o VS Code enxerga as dependências e o Next.js consegue recriar os artefatos sem gerar arquivos `root`.
 
-O serviço `whatsapp-webjs` sobe separado do backend. Na primeira execução, acompanhe os logs para escanear o QR Code do WhatsApp:
+
+### Serviço WhatsApp (whatsapp-webjs)
+
+O serviço `whatsapp-webjs` é responsável pelo envio de mensagens automáticas via WhatsApp, como notificações de aniversário.
+
+**Como subir:**
 
 ```bash
-docker compose logs -f whatsapp-webjs
+# Com perfil WhatsApp habilitado
+docker compose -f docker-compose.prod.yml --profile whatsapp up -d --build
 ```
 
-Depois que a sessão estiver autenticada, ela fica persistida no volume `whatsapp_webjs_session`.
+**Primeira execução:**
+1. Veja os logs para escanear o QR Code e autenticar:
+   ```bash
+   docker compose -f docker-compose.prod.yml logs -f whatsapp-webjs
+   ```
+2. Após autenticar, a sessão fica salva no volume `whatsapp_webjs_session`.
+
+**Variáveis importantes no .env.production:**
+```
+WHATSAPP_ENABLED=true
+WHATSAPP_RECIPIENT_PHONE=5583SEUNUMERO
+WHATSAPP_TIMEOUT_SECONDS=10
+```
+
+**Logs e monitoramento:**
+Veja os logs para acompanhar envios e possíveis erros:
+```bash
+docker compose -f docker-compose.prod.yml logs -f whatsapp-webjs
+```
 
 - **Frontend**: http://localhost:3000  
 - **Backend API**: http://localhost:8000  
@@ -119,17 +143,8 @@ Os testes usam **SQLite em memória** — não precisam de PostgreSQL rodando.
 
 Para alterar o usuário que pode editar o sistema, ajuste as variáveis `ADMIN_USERNAME`, `ADMIN_PASSWORD` e `ACCESS_TOKEN_EXPIRE_HOURS` no arquivo `.env` do backend.
 
-Para habilitar envio de aniversários por WhatsApp usando `whatsapp-web.js`, ajuste também:
 
-```env
-WHATSAPP_ENABLED=true
-WHATSAPP_RECIPIENT_PHONE=5583SEUNUMERO
-WHATSAPP_TIMEOUT_SECONDS=10
-WHATSAPP_WEBJS_API_URL=http://localhost:3001
-WHATSAPP_WEBJS_API_KEY=change-this-local-key
-```
-
-O mesmo valor de `WHATSAPP_WEBJS_API_KEY` precisa estar disponível para o serviço `whatsapp-webjs` no `docker-compose`.
+---
 
 ---
 
@@ -256,6 +271,7 @@ exit
 ssh ubuntu@<IP_DA_VM>
 ```
 
+
 ### 4. Configurar e subir
 
 ```bash
@@ -268,10 +284,10 @@ cp .env.production.example .env.production
 nano .env.production
 # → Preencha DOMAIN, POSTGRES_PASSWORD, SECRET_KEY, ADMIN_PASSWORD, etc.
 
-# Suba os serviços
+# Suba os serviços principais
 docker compose -f docker-compose.prod.yml up -d --build
 
-# (Opcional) Com WhatsApp habilitado
+# Para habilitar o WhatsApp, suba também o perfil whatsapp:
 docker compose -f docker-compose.prod.yml --profile whatsapp up -d --build
 
 # Verifique os logs
