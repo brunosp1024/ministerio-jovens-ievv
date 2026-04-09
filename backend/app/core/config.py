@@ -30,12 +30,7 @@ class Settings(BaseSettings):
     EVOLUTION_INSTANCE_NAME: str = "ministerio-jovens-ievv"
 
     class Config:
-        import os
-        env = os.getenv("ENVIRONMENT", "development")
-        if env == "production":
-            env_file = PROJECT_ROOT / ".env.production"
-        else:
-            env_file = PROJECT_ROOT / ".env"
+        env_file = PROJECT_ROOT / ".env"
         case_sensitive = True
         extra = "ignore"
 

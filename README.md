@@ -278,10 +278,10 @@ ssh ubuntu@<IP_DA_VM>
 cd /opt/verbo-da-vida
 
 # Crie o arquivo de variáveis de produção
-cp .env.production.example .env.production
+cp .env.example .env
 
 # Edite com senhas seguras (OBRIGATÓRIO trocar todos os valores TROCAR_*)
-nano .env.production
+nano .env
 # → Preencha DOMAIN, POSTGRES_PASSWORD, SECRET_KEY, ADMIN_PASSWORD, etc.
 
 # Suba os serviços principais
