@@ -49,9 +49,11 @@ docker-compose up --build
 No fluxo Docker de desenvolvimento, o frontend instala dependências em `frontend/node_modules` e usa `frontend/.next` no host. Como o container roda com o mesmo UID/GID do usuário local, o VS Code enxerga as dependências e o Next.js consegue recriar os artefatos sem gerar arquivos `root`.
 
 
-### Serviço WhatsApp (whatsapp-webjs)
 
-O serviço `whatsapp-webjs` é responsável pelo envio de mensagens automáticas via WhatsApp, como notificações de aniversário.
+### Serviço WhatsApp (evolution-api)
+
+O serviço `evolution-api` é responsável pelo envio de mensagens automáticas via WhatsApp, como notificações de aniversário.
+
 
 **Como subir:**
 
@@ -63,21 +65,27 @@ docker compose -f docker-compose.prod.yml --profile whatsapp up -d --build
 **Primeira execução:**
 1. Veja os logs para escanear o QR Code e autenticar:
    ```bash
-   docker compose -f docker-compose.prod.yml logs -f whatsapp-webjs
+   docker compose -f docker-compose.prod.yml logs -f evolution-api
    ```
-2. Após autenticar, a sessão fica salva no volume `whatsapp_webjs_session`.
+2. Após autenticar, a sessão fica salva no volume do evolution-api.
 
-**Variáveis importantes no .env.production:**
+
+**Variáveis importantes no .env:**
 ```
 WHATSAPP_ENABLED=true
 WHATSAPP_RECIPIENT_PHONE=5583SEUNUMERO
 WHATSAPP_TIMEOUT_SECONDS=10
+EVOLUTION_API_URL=http://evolution-api:8080
+EVOLUTION_API_KEY=SEU_TOKEN
+EVOLUTION_INSTANCE_NAME=nome-da-instancia
+REDIS_PASSWORD=senha-redis
 ```
+
 
 **Logs e monitoramento:**
 Veja os logs para acompanhar envios e possíveis erros:
 ```bash
-docker compose -f docker-compose.prod.yml logs -f whatsapp-webjs
+docker compose -f docker-compose.prod.yml logs -f evolution-api
 ```
 
 - **Frontend**: http://localhost:3000  
