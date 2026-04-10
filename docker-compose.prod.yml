@@ -103,6 +103,8 @@ services:
       context: .
       dockerfile: ./deploy/webhook/Dockerfile
     restart: always
+    volumes:
+      - ./:/app
     env_file:
       - .env
     ports:
