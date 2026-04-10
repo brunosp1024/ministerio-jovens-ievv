@@ -2,6 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
 COPY ./backend/app/core/config.py ./core/config.py
 COPY ./backend/app/core/__init__.py ./core/__init__.py
 COPY ./deploy/webhook/webhook_deploy.py ./webhook_deploy.py
