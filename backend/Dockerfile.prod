@@ -20,7 +20,7 @@ COPY --from=builder /install /usr/local
 COPY . .
 
 # Remove test/dev files from production image
-RUN rm -rf tests/ htmlcov/ pytest.ini .env.example
+RUN rm -rf htmlcov/
 
 EXPOSE 8000
 
