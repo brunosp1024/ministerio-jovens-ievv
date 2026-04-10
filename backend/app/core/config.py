@@ -5,10 +5,11 @@ from typing import List
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
+    WEBHOOK_SECRET: str = ""
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@db:5432/verbo_da_vida"
     DATABASE_URL_SYNC: str = Field(
         default="postgresql://postgres:postgres@db:5432/verbo_da_vida",

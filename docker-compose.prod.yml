@@ -70,8 +70,6 @@ services:
       - internal
 
   evolution-api:
-    profiles:
-      - whatsapp
     image: evoapicloud/evolution-api:v2.3.7
     restart: always
     env_file:
@@ -85,8 +83,6 @@ services:
       - internal
 
   redis:
-    profiles:
-      - whatsapp
     image: redis:7-alpine
     restart: always
     env_file:
@@ -99,6 +95,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
+
+  webhook-deploy:
+    build:
+      context: .
+      dockerfile: ./deploy/webhook/Dockerfile
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
     networks:
       - internal
 
