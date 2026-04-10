@@ -1,4 +1,4 @@
-# 🕊️ Sistema Ministério de Jovens — Verbo da Vida
+# 🕊️ Sistema Jovens do Verbo - JDV
 
 Sistema completo de gestão do ministério de jovens: cadastro de jovens, eventos e controle financeiro com distribuição de ganhos.
 
@@ -54,13 +54,6 @@ No fluxo Docker de desenvolvimento, o frontend instala dependências em `fronten
 
 O serviço `evolution-api` é responsável pelo envio de mensagens automáticas via WhatsApp, como notificações de aniversário.
 
-
-**Como subir:**
-
-```bash
-# Com perfil WhatsApp habilitado
-docker compose -f docker-compose.prod.yml --profile whatsapp up -d --build
-```
 
 **Primeira execução:**
 1. Veja os logs para escanear o QR Code e autenticar:
@@ -294,9 +287,6 @@ nano .env
 
 # Suba os serviços principais
 docker compose -f docker-compose.prod.yml up -d --build
-
-# Para habilitar o WhatsApp, suba também o perfil whatsapp:
-docker compose -f docker-compose.prod.yml --profile whatsapp up -d --build
 
 # Verifique os logs
 docker compose -f docker-compose.prod.yml logs -f
