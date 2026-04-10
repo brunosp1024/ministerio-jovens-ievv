@@ -38,7 +38,7 @@ export default function Sidebar({ open, onClose }: Props) {
           <div className="sidebar__logo">
             <div className="rounded-lg">
               <Image
-                src="/img/logo-verbo.jpg"
+                src="/img/logo-512.png"
                 alt="Logo Verbo da Vida"
                 width={40}
                 height={40}
@@ -79,7 +79,7 @@ export default function Sidebar({ open, onClose }: Props) {
         </nav>
 
         <div className="sidebar__footer">
-          <p className="sidebar__footer-text">© 2025 Verbo da Vida</p>
+          <p className="sidebar__footer-text">© {new Date().getFullYear()} Verbo da Vida</p>
         </div>
       </aside>
     </>
