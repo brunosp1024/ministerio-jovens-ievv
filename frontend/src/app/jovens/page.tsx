@@ -10,7 +10,7 @@ import DatePicker from "@/components/ui/DatePicker";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Toggle from "@/components/ui/Toggle";
-import { Plus, Pencil, Trash2, Users, Search, Gift } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Search, Gift, Download } from "lucide-react";
 import { formatDate, calcularIdade, formatPhone } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { Controller, useForm } from "react-hook-form";
@@ -49,6 +49,46 @@ export default function JovensPage() {
     onError: () => toast.error("Erro ao remover jovem."),
   });
 
+  // Função para exportar CSV
+  function exportarCSV() {
+    if (!jovens.length) return;
+    const headers = [
+      "ID",
+      "Nome",
+      "E-mail",
+      "Telefone",
+      "Data de Nascimento",
+      "Idade",
+      "Endereço",
+      "Financeiro",
+      "Status"
+    ];
+    const rows = jovens.map((j) => [
+      j.id,
+      j.nome,
+      j.email ?? "",
+      j.telefone ?? "",
+      formatDate(j.data_nascimento),
+      calcularIdade(j.data_nascimento),
+      j.endereco ?? "",
+      j.habilitado_financeiro ? "Habilitado" : "Não habilitado",
+      j.ativo ? "Ativo" : "Inativo"
+    ]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `jovens_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function openCreate() { reset({}); setEditing(null); setModalOpen(true); }
   function openEdit(j: Jovem) {
     setEditing(j);
@@ -85,7 +125,10 @@ export default function JovensPage() {
           <p className="page-subtitle">{jovens.length} {jovens.length === 1 ? "jovem cadastrado" : "jovens cadastrados"}</p>
         </div>
         {isAuthenticated && (
-          <Button onClick={openCreate}><Plus className="w-4 h-4" /> Novo Jovem</Button>
+          <div className="flex gap-2">
+            <Button onClick={openCreate}><Plus className="w-4 h-4" /> Novo Jovem</Button>
+            <Button variant="outline" onClick={exportarCSV}><Download className="w-4 h-4" /> Exportar CSV</Button>
+          </div>
         )}
       </div>
 
