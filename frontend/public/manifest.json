@@ -1,0 +1,35 @@
+{
+  "name": "Jovens do Verbo - JDV",
+  "short_name": "Verbo",
+  "description": "App Jovens do Verbo da Vida.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/img/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/img/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/img/screenshot-mobile.png",
+      "sizes": "375x667",
+      "type": "image/png"
+    }
+  ]
+}

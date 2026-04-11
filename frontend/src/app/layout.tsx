@@ -14,10 +14,28 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <meta name="theme-color" content="#0d9488" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Verbo da Vida" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/img/logo-512.png" />
+        <link rel="icon" href="/img/logo-192.png" />
+      </head>
       <body className={inter.className}>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/service-worker.js');
+              });
+            }
+          `
+        }} />
       </body>
     </html>
   );
