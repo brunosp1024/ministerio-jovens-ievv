@@ -78,7 +78,7 @@ export default function Navbar({ onMenuClick }: Props) {
         </button>
 
         <div className="hidden lg:block">
-          <p className="navbar__title">Ministério de Jovens — Verbo da Vida</p>
+          <p className="navbar__title">Jovens do Verbo - JDV</p>
         </div>
 
         <div className="navbar__actions">

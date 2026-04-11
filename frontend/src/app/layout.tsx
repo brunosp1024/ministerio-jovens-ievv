@@ -7,7 +7,7 @@ import AppShell from "@/components/layout/AppShell";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ministério de Jovens | Verbo da Vida",
+  title: "Jovens do Verbo - JDV",
   description: "Sistema de gestão do ministério de jovens da Igreja Verbo da Vida",
 };
 

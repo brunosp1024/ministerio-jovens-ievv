@@ -82,7 +82,7 @@ export default function JovensPage() {
       <div className="page-header">
         <div>
           <h1 className="page-title"><Users className="page-title__icon" /> Jovens</h1>
-          <p className="page-subtitle">{jovens.length} jovem(ns) cadastrado(s)</p>
+          <p className="page-subtitle">{jovens.length} {jovens.length === 1 ? "jovem cadastrado" : "jovens cadastrados"}</p>
         </div>
         {isAuthenticated && (
           <Button onClick={openCreate}><Plus className="w-4 h-4" /> Novo Jovem</Button>

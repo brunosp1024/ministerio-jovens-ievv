@@ -11,7 +11,7 @@ import Input from "@/components/ui/Input";
 import Textarea from "@/components/ui/Textarea";
 import Select from "@/components/ui/Select";
 import { Calendar, Plus, Pencil, Trash2, MapPin } from "lucide-react";
-import { formatDateTime } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { Controller, useForm } from "react-hook-form";
 import { useAuth } from "@/contexts/AuthContext";
@@ -81,7 +81,7 @@ export default function EventosPage() {
             <h3 className="evento-card__title">{evento.nome}</h3>
             {evento.descricao && <p className="evento-card__description">{evento.descricao}</p>}
             <div className="evento-card__meta">
-              <span className="evento-card__meta-item"><Calendar className="evento-card__meta-icon" />{formatDateTime(evento.data_evento)}</span>
+              <span className="evento-card__meta-item"><Calendar className="evento-card__meta-icon" />{formatDate(evento.data_evento)}</span>
               {evento.local && <span className="evento-card__meta-item"><MapPin className="evento-card__meta-icon" />{evento.local}</span>}
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function EventosPage() {
       <div className="page-header">
         <div>
           <h1 className="page-title"><Calendar className="page-title__icon" /> Eventos</h1>
-          <p className="page-subtitle">{eventos.length} evento(s) cadastrado(s)</p>
+          <p className="page-subtitle">{eventos.length} {eventos.length === 1 ? "evento cadastrado" : "eventos cadastrados"}</p>
         </div>
         {isAuthenticated && (
           <Button onClick={() => requireAuth(openCreate)}><Plus className="w-4 h-4" /> Novo Evento</Button>
