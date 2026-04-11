@@ -1,4 +1,5 @@
 import pytest
+import sqlalchemy
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -8,6 +9,8 @@ from app.api.deps import get_db
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import Base
+from app.models.jovem import Jovem
+from datetime import date
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -41,6 +44,23 @@ async def setup_db():
 
 @pytest_asyncio.fixture
 async def public_client():
+
+    # Cria usuário admin se não existir
+    async with AsyncTestSessionLocal() as session:
+        result = await session.execute(sqlalchemy.select(Jovem).where(Jovem.email == "admin@admin.com"))
+        admin = result.scalar_one_or_none()
+        if not admin:
+            admin = Jovem(
+                nome="admin",
+                email="admin@admin.com",
+                telefone="0000000000",
+                data_nascimento=date(1990, 1, 1),
+                habilitado_financeiro=True,
+                ativo=True,
+            )
+            session.add(admin)
+            await session.commit()
+
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
 

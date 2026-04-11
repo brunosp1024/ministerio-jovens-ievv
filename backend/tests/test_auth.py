@@ -1,7 +1,14 @@
+
+import pytest
 from httpx import AsyncClient
+from app.core import config
 
 
+@pytest.mark.asyncio
 async def test_login_sucesso(public_client: AsyncClient):
+    # Força os valores esperados no settings
+    config.settings.ADMIN_USERNAME = "admin"
+    config.settings.ADMIN_PASSWORD = "admin123"
     response = await public_client.post(
         "/api/v1/auth/login",
         json={"username": "admin", "password": "admin123"},
