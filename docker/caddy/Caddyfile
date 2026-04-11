@@ -1,12 +1,13 @@
+# Evolution API em subdomínio dedicado
+evolution.64.181.189.97.nip.io {
+    reverse_proxy evolution-api:8080
+}
+
+# Domínio principal do sistema
 {$DOMAIN} {
     # API
     handle /api/* {
         reverse_proxy backend:8000
-    }
-
-    # Evolution API
-    handle /evolution-api/* {
-        reverse_proxy evolution-api:8080
     }
 
     # Health check
