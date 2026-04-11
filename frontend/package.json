@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "sharp": "^0.33.3",
     "@tanstack/react-query": "^5.40.0",
     "@tanstack/react-query-devtools": "^5.40.0",
     "axios": "^1.7.2",
