@@ -162,8 +162,15 @@ export default function JovensPage() {
             <table className="data-table">
               <thead>
                 <tr className="data-table__head-row">
-                  {["Nome", "Nascimento / Idade", "Telefone", "Financeiro", "Status", ...(isAuthenticated ? ["Ações"] : [])].map((h) => (
-                    <th key={h} className="data-table__head-cell">{h}</th>
+                  {[
+                    "Nome",
+                    <span key="Nascimento / Idadess" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
+                    "Telefone",
+                    "Financeiro",
+                    "Status",
+                    ...(isAuthenticated ? ["Ações"] : [])
+                  ].map((h) => (
+                    <th key={typeof h === "string" ? h : h.key} className="data-table__head-cell">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -181,8 +188,8 @@ export default function JovensPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="data-table__cell">{formatDate(j.data_nascimento)} <span className="jovem__age">({calcularIdade(j.data_nascimento)} anos)</span></td>
-                    <td className="data-table__cell">{j.telefone ?? "—"}</td>
+                    <td className="data-table__cell">{formatDate(j.data_nascimento)} <br /><span className="jovem__age">({calcularIdade(j.data_nascimento)} anos)</span></td>
+                    <td className="data-table__cell" style={{ whiteSpace: "nowrap" }}>{j.telefone ?? "—"}</td>
                     <td className="py-3 pr-4">
                       <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
                         {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
