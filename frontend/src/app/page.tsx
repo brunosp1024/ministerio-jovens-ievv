@@ -26,7 +26,7 @@ export default function DashboardPage() {
     <div className="page">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-        <p className="page-description">Bem-vindo ao sistema do Ministério de Jovens — Verbo da Vida</p>
+        <p className="page-description">Bem-vindo ao sistema Jovens do Verbo - JDV</p>
       </div>
 
       <div className="stats-grid">
