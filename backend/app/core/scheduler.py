@@ -12,13 +12,13 @@ def setup_scheduler():
 
     scheduler.add_job(
         verificar_aniversariantes,
-        trigger=CronTrigger(hour=4, minute=30),
+        trigger=CronTrigger(hour=6, minute=0),
         id="verificar_aniversariantes",
         name="Verificar aniversariantes do dia",
         replace_existing=True,
     )
     scheduler.start()
-    logger.info("Scheduler iniciado. Task de aniversário agendada para 04:30 diariamente.")
+    logger.info("Scheduler iniciado. Task de aniversário agendada para 06:00 diariamente.")
 
 
 def shutdown_scheduler():
