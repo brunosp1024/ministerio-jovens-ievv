@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     WHATSAPP_RECIPIENT_PHONE: str = ""
     WHATSAPP_TIMEOUT_SECONDS: int = 10
     EVOLUTION_API_URL: str = "http://localhost:8080"
-    EVOLUTION_API_KEY: str = ""
+    AUTHENTICATION_API_KEY: str = ""
     EVOLUTION_INSTANCE_NAME: str = "ministerio-jovens-ievv"
 
     class Config:

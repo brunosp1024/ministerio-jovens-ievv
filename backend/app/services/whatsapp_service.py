@@ -14,7 +14,7 @@ class WhatsAppService:
     def __init__(self):
         self.enabled = settings.WHATSAPP_ENABLED
         self.api_url = settings.EVOLUTION_API_URL.rstrip("/")
-        self.api_key = settings.EVOLUTION_API_KEY
+        self.api_key = settings.AUTHENTICATION_API_KEY
         self.instance_name = settings.EVOLUTION_INSTANCE_NAME
         self.recipient_phone = self._normalizar_telefone(settings.WHATSAPP_RECIPIENT_PHONE)
         self.timeout_seconds = settings.WHATSAPP_TIMEOUT_SECONDS
@@ -40,7 +40,7 @@ class WhatsAppService:
         if not self.configurado:
             logger.warning(
                 "Configuração da Evolution API incompleta. Defina EVOLUTION_API_URL, "
-                "EVOLUTION_API_KEY, EVOLUTION_INSTANCE_NAME e WHATSAPP_RECIPIENT_PHONE para habilitar o envio."
+                "AUTHENTICATION_API_KEY, EVOLUTION_INSTANCE_NAME e WHATSAPP_RECIPIENT_PHONE para habilitar o envio."
             )
             return False
 
