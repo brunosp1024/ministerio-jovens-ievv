@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from app.db.session import AsyncSessionLocal
 from app.services.notificacao_service import NotificacaoService
@@ -24,3 +25,6 @@ async def verificar_aniversariantes():
         else:
             logger.info("Nenhum aniversariante hoje.")
     return notificacoes
+
+if __name__ == "__main__":
+    asyncio.run(verificar_aniversariantes())
