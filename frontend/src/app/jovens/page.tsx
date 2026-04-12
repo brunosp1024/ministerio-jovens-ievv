@@ -180,7 +180,7 @@ export default function JovensPage() {
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
                         <div className="data-table__avatar data-table__avatar--blue">
-                          {j.nome.charAt(0).toUpperCase()}
+                          {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
                         </div>
                         <div>
                           <p className="jovem__name">{j.nome}</p>
