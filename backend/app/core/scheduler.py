@@ -10,8 +10,14 @@ scheduler = AsyncIOScheduler()
 def setup_scheduler():
     from app.tasks.birthday_task import verificar_aniversariantes
 
+    async def wrapper():
+        try:
+            await verificar_aniversariantes()
+        except Exception as e:
+            logger.exception(f"Erro na task de aniversário: {e}")
+
     scheduler.add_job(
-        verificar_aniversariantes,
+        wrapper,
         trigger=CronTrigger(hour=6, minute=0),
         id="verificar_aniversariantes",
         name="Verificar aniversariantes do dia",
