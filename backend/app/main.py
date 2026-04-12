@@ -4,6 +4,10 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.scheduler import setup_scheduler, shutdown_scheduler
 from app.api.v1.router import api_router
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 @asynccontextmanager
