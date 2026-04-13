@@ -1,5 +1,5 @@
 # Evolution API em subdomínio dedicado
-evolution.64.181.189.97.nip.io {
+{$EVOLUTION_DOMAIN} {
     reverse_proxy evolution-api:8080
 }
 
