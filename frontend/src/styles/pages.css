@@ -163,10 +163,10 @@
 
   /* Jovens table */
   .jovem__name {
-    @apply font-medium text-slate-800;
+    @apply font-medium text-slate-800 whitespace-nowrap;
   }
 
-  .jovem__email {
+  .jovem__telefone {
     @apply text-xs text-slate-400;
   }
 

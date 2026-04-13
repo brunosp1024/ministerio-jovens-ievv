@@ -165,7 +165,6 @@ export default function JovensPage() {
                   {[
                     "Nome",
                     <span key="Nascimento / Idadess" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
-                    "Telefone",
                     "Financeiro",
                     "Status",
                     ...(isAuthenticated ? ["Ações"] : [])
@@ -183,13 +182,12 @@ export default function JovensPage() {
                           {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
                         </div>
                         <div>
-                          <p className="jovem__name">{j.nome}</p>
-                          {j.email && <p className="jovem__email">{j.email}</p>}
+                          <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
+                          {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
                         </div>
                       </div>
                     </td>
                     <td className="data-table__cell">{formatDate(j.data_nascimento)} <br /><span className="jovem__age">({calcularIdade(j.data_nascimento)} anos)</span></td>
-                    <td className="data-table__cell" style={{ whiteSpace: "nowrap" }}>{j.telefone ?? "—"}</td>
                     <td className="py-3 pr-4">
                       <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
                         {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
