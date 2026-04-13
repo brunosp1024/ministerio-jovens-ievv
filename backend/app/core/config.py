@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List
-
+import logging
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings
 
@@ -51,3 +51,12 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    return logging
