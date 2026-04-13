@@ -36,6 +36,21 @@ services:
     networks:
       - internal
 
+    scheduler:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile.prod
+      restart: always
+      env_file:
+        - .env
+      depends_on:
+        db:
+          condition: service_healthy
+      command: python -m app.core.scheduler
+      mem_limit: 512m
+      networks:
+        - internal
+
   frontend:
     build:
       context: ./frontend
@@ -67,6 +82,8 @@ services:
       backend:
         condition: service_healthy
       frontend:
+        condition: service_started
+      evolution-api:
         condition: service_started
     networks:
       - internal
