@@ -121,7 +121,7 @@ async def test_whatsapp_service_envia_resumo_configurado(monkeypatch: pytest.Mon
     monkeypatch.setattr(settings, "WHATSAPP_RECIPIENT_PHONE", "+55 (83) 99999-8888")
     monkeypatch.setattr(settings, "WHATSAPP_TIMEOUT_SECONDS", 7)
     monkeypatch.setattr(settings, "EVOLUTION_API_URL", "http://localhost:8080")
-    monkeypatch.setattr(settings, "EVOLUTION_API_KEY", "local-api-key")
+    monkeypatch.setattr(settings, "AUTHENTICATION_API_KEY", "local-api-key")
     monkeypatch.setattr(settings, "EVOLUTION_INSTANCE_NAME", "verbo-da-vida")
     monkeypatch.setattr("app.services.whatsapp_service.httpx.AsyncClient", FakeAsyncClient)
 
