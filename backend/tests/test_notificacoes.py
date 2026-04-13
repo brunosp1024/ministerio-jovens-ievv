@@ -167,10 +167,18 @@ async def test_task_birthday(db_session: AsyncSession, monkeypatch: pytest.Monke
         async def enviar_resumo_aniversarios(self, notificacoes):
             return await envio_mock(notificacoes)
 
-    monkeypatch.setattr(birthday_task, "AsyncSessionLocal", lambda: FakeSessionContext())
+    # Monkeypatch para substituir o async_sessionmaker dentro da função
+    original_create_async_engine = birthday_task.create_async_engine
+    original_async_sessionmaker = birthday_task.async_sessionmaker
+    monkeypatch.setattr(birthday_task, "create_async_engine", lambda *a, **kw: None)
+    monkeypatch.setattr(birthday_task, "async_sessionmaker", lambda *a, **kw: lambda: FakeSessionContext())
     monkeypatch.setattr(birthday_task, "WhatsAppService", FakeWhatsAppService)
 
     result = await birthday_task.verificar_aniversariantes()
+
+    # Restaurar funções originais (boa prática, mas pytest faz isso automaticamente)
+    birthday_task.create_async_engine = original_create_async_engine
+    birthday_task.async_sessionmaker = original_async_sessionmaker
 
     assert isinstance(result, list)
     envio_mock.assert_awaited_once()
