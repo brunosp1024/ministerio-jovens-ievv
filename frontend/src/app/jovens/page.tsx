@@ -106,15 +106,20 @@ export default function JovensPage() {
     else createMutation.mutate(data);
   }
 
+  // Data de hoje no fuso local, ignorando horário
   const hoje = new Date();
+  const hojeDia = hoje.getDate();
+  const hojeMes = hoje.getMonth() + 1;
+  
   const filtered = jovens.filter((j) =>
     j.nome.toLowerCase().includes(search.toLowerCase()) ||
     (j.email ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   const aniversariantes = jovens.filter((j) => {
-    const d = new Date(j.data_nascimento);
-    return d.getMonth() === hoje.getMonth() && d.getDate() === hoje.getDate();
+    // Garante que a comparação é feita apenas com dia e mês, sem problemas de fuso
+    const [ano, mes, dia] = String(j.data_nascimento).split("-").map(Number);
+    return mes === hojeMes && dia === hojeDia;
   });
 
   return (
