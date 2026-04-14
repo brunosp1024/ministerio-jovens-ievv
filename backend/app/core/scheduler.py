@@ -12,7 +12,7 @@ def setup_scheduler():
     logger.info("Chamando setup_scheduler")
 
     scheduler_params = {
-        'trigger': CronTrigger(hour=17, minute=1),
+        'trigger': CronTrigger(hour=6, minute=0),
         'replace_existing': True,
         'max_instances': 1,
         'coalesce': True
