@@ -167,7 +167,7 @@
   }
 
   .jovem__telefone {
-    @apply text-xs text-slate-400;
+    @apply text-slate-600;
   }
 
   .jovem__age {

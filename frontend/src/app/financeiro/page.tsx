@@ -178,7 +178,7 @@ export default function FinanceiroPage() {
 
       {/* Lista de vendas semanais */}
       <div className="card">
-        <h2 className="section-title--base">Semanas</h2>
+        <h2 className="section-title--base">Arrecardações</h2>
         {isLoading ? (
           <p className="loading-state">Carregando...</p>
         ) : vendas.length === 0 ? (
@@ -263,7 +263,7 @@ export default function FinanceiroPage() {
         <div className="ganhos-header">
           <Users2 className="ganhos-header__icon" />
           <h2 className="section-title--base">
-            Ganhos por Jovem — {MESES.find((m2) => m2.value === mes)?.label} {ano}
+            Ganhos por Jovem
           </h2>
         </div>
         {ganhosMensais.length === 0 ? (
@@ -289,7 +289,7 @@ export default function FinanceiroPage() {
                             <div className="data-table__avatar--sm data-table__avatar--purple">
                               {g.jovem_nome.charAt(0)}
                             </div>
-                            <span className="jovem__name">{g.jovem_nome}</span>
+                            <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
                           </div>
                         </td>
                         <td className="data-table__cell--right font-semibold text-green-600">{formatCurrency(g.total_mensal)}</td>

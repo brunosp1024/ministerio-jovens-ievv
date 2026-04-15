@@ -11,6 +11,7 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Toggle from "@/components/ui/Toggle";
 import { Plus, Pencil, Trash2, Users, Search, Gift, Download } from "lucide-react";
+import Badge from "@/components/ui/Badge";
 import { formatDate, calcularIdade, formatPhone } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { Controller, useForm } from "react-hook-form";
@@ -48,6 +49,15 @@ export default function JovensPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["jovens"] }); toast.success("Jovem removido!"); setDeleteTarget(null); },
     onError: () => toast.error("Erro ao remover jovem."),
   });
+
+  // Função para classificar faixa etária
+  function faixaEtaria(idade: number): { label: string; color: string } {
+    if (idade <= 13) return { label: "Pré-adolescente", color: "#10b981" };
+    if (idade <= 17) return { label: "Adolescente", color: "#5054ff" };
+    if (idade <= 25) return { label: "Jovem", color: "#f59e42" };
+    if (idade <= 35) return { label: "Jovem adulto", color: "#3b327d" };
+    return { label: "Mentor", color: "#6d28d9" };
+  }
 
   // Função para exportar CSV
   function exportarCSV() {
@@ -170,6 +180,8 @@ export default function JovensPage() {
                   {[
                     "Nome",
                     <span key="Nascimento / Idadess" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
+                    "Telefone",
+                    "Perfil",
                     "Financeiro",
                     "Status",
                     ...(isAuthenticated ? ["Ações"] : [])
@@ -190,27 +202,36 @@ export default function JovensPage() {
                           <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
                           {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
                         </div>
-                      </div>
-                    </td>
-                    <td className="data-table__cell">{formatDate(j.data_nascimento)} <br /><span className="jovem__age">({calcularIdade(j.data_nascimento)} anos)</span></td>
-                    <td className="py-3 pr-4">
-                      <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
-                        {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
-                      </span>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <span className={j.ativo ? "badge-green" : "badge-red"}>{j.ativo ? "Ativo" : "Inativo"}</span>
-                    </td>
-                    {isAuthenticated && (
-                      <td className="py-3">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
-                          <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
-                        </div>
                       </td>
-                    )}
-                  </tr>
-                ))}
+                      <td className="data-table__cell">
+                        {formatDate(j.data_nascimento)} <br />
+                        <span className="jovem__age">({idade} anos)</span>
+                      </td>
+                      <td className="data-table__cell">
+                        {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
+                      </td>
+                      <td className="py-3 pr-4">
+                        {j.perfil ? <Badge color="#0ea5e9">{j.perfil}</Badge> : <span>-</span>}
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
+                          {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className={j.ativo ? "badge-green" : "badge-red"}>{j.ativo ? "Ativo" : "Inativo"}</span>
+                      </td>
+                      {isAuthenticated && (
+                        <td className="py-3">
+                          <div className="flex items-center gap-1">
+                            <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
+                            <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
