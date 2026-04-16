@@ -1,12 +1,11 @@
 import os
 import httpx
+import cloudinary
+import cloudinary.uploader
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from app.models.jovem import Jovem
-# from dotenv import load_dotenv
 
-# # Carregar variáveis do .env
-# load_dotenv()
 
 # Configurações
 EVOLUTION_API_URL = "https://evolution.64.181.189.97.nip.io"
@@ -15,8 +14,6 @@ CLOUDINARY_URL = os.getenv("CLOUDINARY_URL")
 DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URI")
 
 # Cloudinary
-import cloudinary
-import cloudinary.uploader
 cloudinary.config(cloudinary_url=CLOUDINARY_URL)
 
 # SQLAlchemy
@@ -32,7 +29,6 @@ def get_whatsapp_profile_picture(phone: str) -> bytes | None:
     resp = httpx.post(url, headers=headers, json=payload)
     if resp.status_code == 200:
         data = resp.json()
-        print(f"Resposta da Evolution API para {phone}: {data}")
         profile_url = data.get("profilePictureUrl")
         if profile_url and profile_url.startswith("http"):
             img_resp = httpx.get(profile_url)
@@ -61,9 +57,6 @@ def upload_to_cloudinary(image_bytes: bytes, public_id: str) -> str | None:
 def main():
     jovens = session.query(Jovem).filter(Jovem.telefone != None).all()
     for jovem in jovens:
-        if jovem.foto_url:
-            # print(f"Jovem {jovem.nome} já tem foto, pulando.")
-            continue
         print(f"Processando: {jovem.nome} - {jovem.telefone}")
         phone_norm = normalize_phone(jovem.telefone)
         img_bytes = get_whatsapp_profile_picture(phone_norm)
