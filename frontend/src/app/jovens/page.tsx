@@ -108,14 +108,18 @@ export default function JovensPage() {
     URL.revokeObjectURL(url);
   }
 
-  function openCreate() { reset({}); setEditing(null); setModalOpen(true); }
+  function openCreate() { reset({ perfil: "integrante" }); setEditing(null); setModalOpen(true); }
   function openEdit(j: Jovem) {
     setEditing(j);
     reset({
-      nome: j.nome, telefone: j.telefone ?? "",
-      data_nascimento: j.data_nascimento, endereco: j.endereco ?? "",
-      habilitado_financeiro: j.habilitado_financeiro, ativo: j.ativo,
-      foto_url: j.foto_url ?? "", perfil: j.perfil ?? "Integrante"
+      nome: j.nome,
+      telefone: j.telefone ?? "",
+      data_nascimento: j.data_nascimento,
+      endereco: j.endereco ?? "",
+      habilitado_financeiro: j.habilitado_financeiro,
+      ativo: j.ativo,
+      foto_url: j.foto_url ?? "",
+      perfil: j.perfil ?? "integrante"
     });
     setModalOpen(true);
   }
@@ -326,8 +330,8 @@ export default function JovensPage() {
                 <Input
                   label="Telefone"
                   placeholder="(83) 99999-9999"
-                  value={field.value ?? ""}
-                  onChange={(e) => field.onChange(formatPhone(e.target.value))}
+                  value={formatPhone(field.value ?? "")}
+                  onChange={e => field.onChange(e.target.value.replace(/\D/g, ""))}
                   onBlur={field.onBlur}
                   name={field.name}
                 />

@@ -1,5 +1,5 @@
 // ─── Jovem ───────────────────────────────────────────────────────────────────
-export type Perfil = "Liderança" | "Diretoria" | "Mídia" | "Tesouraria" | "Integrante";
+export type Perfil = "lideranca" | "diretoria" | "midia" | "tesouraria" | "integrante";
 
 export interface Jovem {
   id: number;
