@@ -57,8 +57,16 @@ export default function EventosPage() {
     else createMut.mutate(data);
   }
 
-  const futuros = eventos.filter((e) => new Date(e.data_evento) >= new Date());
-  const passados = eventos.filter((e) => new Date(e.data_evento) < new Date());
+  const futuros = eventos
+    .filter((e) => new Date(e.data_evento) >= new Date())
+    .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento));
+  
+  const passados = eventos
+    .filter((e) => new Date(e.data_evento) < new Date())
+    .sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento));
+
+  console.log('futurosssss',);
+  
 
   function requireAuth(action: () => void) {
     if (!isAuthenticated) {
