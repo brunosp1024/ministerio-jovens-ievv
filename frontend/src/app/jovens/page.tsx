@@ -25,6 +25,14 @@ export default function JovensPage() {
   const [editing, setEditing] = useState<Jovem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Jovem | null>(null);
 
+  const perfis = [
+    { label: "Integrante", value: "integrante" },
+    { label: "Liderança", value: "lideranca" },
+    { label: "Diretoria", value: "diretoria" },
+    { label: "Mídia", value: "midia" },
+    { label: "Tesouraria", value: "tesouraria" }
+  ]
+  
   const { data: jovens = [], isLoading } = useQuery({
     queryKey: ["jovens"],
     queryFn: () => jovensApi.listar(),
@@ -71,7 +79,8 @@ export default function JovensPage() {
       "Idade",
       "Endereço",
       "Financeiro",
-      "Status"
+      "Status",
+      "Foto URL"
     ];
     const rows = jovens.map((j) => [
       j.id,
@@ -82,7 +91,9 @@ export default function JovensPage() {
       calcularIdade(j.data_nascimento),
       j.endereco ?? "",
       j.habilitado_financeiro ? "Habilitado" : "Não habilitado",
-      j.ativo ? "Ativo" : "Inativo"
+      j.ativo ? "Ativo" : "Inativo",
+      j.foto_url ?? ""
+
     ]);
     const csvContent = [
       headers.join(","),
@@ -106,6 +117,7 @@ export default function JovensPage() {
       nome: j.nome, email: j.email ?? "", telefone: j.telefone ?? "",
       data_nascimento: j.data_nascimento, endereco: j.endereco ?? "",
       habilitado_financeiro: j.habilitado_financeiro, ativo: j.ativo,
+      foto_url: j.foto_url ?? "", perfil: j.perfil ?? "Integrante"
     });
     setModalOpen(true);
   }
@@ -181,7 +193,7 @@ export default function JovensPage() {
                     "Nome",
                     <span key="Nascimento / Idadess" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
                     "Telefone",
-                    "Perfil",
+                    "Faixa Etária",
                     "Financeiro",
                     "Status",
                     ...(isAuthenticated ? ["Ações"] : [])
@@ -191,16 +203,29 @@ export default function JovensPage() {
                 </tr>
               </thead>
               <tbody className="data-table__body">
-                {filtered.map((j) => (
-                  <tr key={j.id} className="data-table__row">
-                    <td className="py-3 pr-4">
-                      <div className="flex items-center gap-2">
-                        <div className="data-table__avatar data-table__avatar--blue">
-                          {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
-                        </div>
-                        <div>
-                          <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
-                          {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
+                {filtered.map((j) => {
+                  const idade = calcularIdade(j.data_nascimento);
+                  const faixa = faixaEtaria(idade);
+                  return (
+                    <tr key={j.id} className="data-table__row">
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-2">
+                          {j.foto_url ? (
+                            <img
+                              src={j.foto_url}
+                              alt={j.nome}
+                              className="data-table__avatar"
+                              style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <div className="data-table__avatar data-table__avatar--blue">
+                              {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
+                            </div>
+                          )}
+                          <div>
+                            <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
+                            <Badge color={faixa.color}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
+                          </div>
                         </div>
                       </td>
                       <td className="data-table__cell">
@@ -211,7 +236,7 @@ export default function JovensPage() {
                         {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
                       </td>
                       <td className="py-3 pr-4">
-                        {j.perfil ? <Badge color="#0ea5e9">{j.perfil}</Badge> : <span>-</span>}
+                        <Badge color={faixa.color}>{faixa.label}</Badge>
                       </td>
                       <td className="py-3 pr-4">
                         <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
@@ -241,6 +266,29 @@ export default function JovensPage() {
       {/* Modal cadastro/edição */}
       <Modal open={modalOpen} onClose={closeModal} title={editing ? "Editar Jovem" : "Novo Jovem"}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="form-group" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <img
+                  src={editing?.foto_url ?? "img/default-avatar.png"}
+                  alt="Foto do jovem"
+                  style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover", border: "2px solid #cbd5e1", boxShadow: "0 4px 16px 0 rgba(0,0,0,0.18)" }}
+                />
+
+                {/* Sombra oval abaixo da imagem */}
+                <div style={{
+                  width: 80,
+                  height: 16,
+                  background: "rgba(0,0,0,0.15)",
+                  borderRadius: "50%",
+                  marginTop: 0,
+                  filter: "blur(1.5px)",
+                  zIndex: 0
+                }} />
+              
+              </div>
+            </div>
+          </div>
           <Input label="Nome completo *" {...register("nome", { required: "Nome é obrigatório" })} error={errors.nome?.message} placeholder="Ex: João da Silva" />
           <Controller
             control={control}
@@ -259,6 +307,21 @@ export default function JovensPage() {
             )}
           />
           <div className="form-grid-2">
+            <Controller
+              control={control}
+              name="perfil"
+              render={({ field }) => (
+                <Select
+                  label="Perfil"
+                  value={field.value ?? "integrante"}
+                  onChange={e => field.onChange(e.target.value)}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  error={errors.perfil?.message}
+                  options={perfis}
+                />
+              )}
+            />
             <Input label="E-mail" {...register("email")} type="email" placeholder="joao@email.com" />
             <Controller
               control={control}

@@ -30,6 +30,7 @@ async def importar_jovens(file_path):
                 email = row.get("E-mail")
                 telefone = row.get("Telefone")
                 data_nascimento = parse_date(row.get("Data de Nascimento"))
+                foto_url = row.get("Foto URL")
                 endereco = row.get("Endereço")
                 financeiro = parse_bool(row.get("Financeiro"))
                 status = parse_bool(row.get("Status"))
@@ -55,6 +56,7 @@ async def importar_jovens(file_path):
                     endereco=endereco,
                     habilitado_financeiro=financeiro,
                     ativo=status,
+                    foto_url=foto_url
                 )
                 await service.create(jovem)
                 count += 1

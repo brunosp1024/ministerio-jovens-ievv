@@ -1,4 +1,6 @@
 // ─── Jovem ───────────────────────────────────────────────────────────────────
+export type Perfil = "Liderança" | "Diretoria" | "Mídia" | "Tesouraria" | "Integrante";
+
 export interface Jovem {
   id: number;
   nome: string;
@@ -9,6 +11,7 @@ export interface Jovem {
   foto_url?: string;
   habilitado_financeiro: boolean;
   ativo: boolean;
+  perfil?: Perfil;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +25,7 @@ export interface JovemCreate {
   foto_url?: string;
   habilitado_financeiro?: boolean;
   ativo?: boolean;
+  perfil?: Perfil;
 }
 
 export type JovemUpdate = Partial<JovemCreate>;

@@ -10,6 +10,7 @@ class JovemBase(BaseModel):
     data_nascimento: date
     endereco: Optional[str] = None
     foto_url: Optional[str] = None
+    perfil: Optional[str] = None
     habilitado_financeiro: bool = True
     ativo: bool = True
 
@@ -32,6 +33,7 @@ class JovemUpdate(BaseModel):
     data_nascimento: Optional[date] = None
     endereco: Optional[str] = None
     foto_url: Optional[str] = None
+    perfil: Optional[str] = None
     habilitado_financeiro: Optional[bool] = None
     ativo: Optional[bool] = None
 
@@ -57,6 +59,7 @@ class JovemResumo(BaseModel):
     nome: str
     data_nascimento: date
     habilitado_financeiro: bool
+    perfil: Optional[str] = None
 
     class Config:
         from_attributes = True

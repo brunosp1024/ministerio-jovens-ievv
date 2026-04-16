@@ -14,6 +14,7 @@ class Jovem(Base):
     data_nascimento: Mapped[date] = mapped_column(Date, nullable=False)
     endereco: Mapped[str | None] = mapped_column(String(250), nullable=True)
     foto_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    perfil: Mapped[str | None] = mapped_column(String(30), nullable=True)
     habilitado_financeiro: Mapped[bool] = mapped_column(Boolean, default=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
