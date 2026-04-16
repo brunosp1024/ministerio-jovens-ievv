@@ -85,10 +85,8 @@ export default function JovensPage() {
     const rows = jovens.map((j) => [
       j.id,
       j.nome,
-      j.email ?? "",
       j.telefone ?? "",
       formatDate(j.data_nascimento),
-      calcularIdade(j.data_nascimento),
       j.endereco ?? "",
       j.habilitado_financeiro ? "Habilitado" : "Não habilitado",
       j.ativo ? "Ativo" : "Inativo",
@@ -114,7 +112,7 @@ export default function JovensPage() {
   function openEdit(j: Jovem) {
     setEditing(j);
     reset({
-      nome: j.nome, email: j.email ?? "", telefone: j.telefone ?? "",
+      nome: j.nome, telefone: j.telefone ?? "",
       data_nascimento: j.data_nascimento, endereco: j.endereco ?? "",
       habilitado_financeiro: j.habilitado_financeiro, ativo: j.ativo,
       foto_url: j.foto_url ?? "", perfil: j.perfil ?? "Integrante"
@@ -134,8 +132,7 @@ export default function JovensPage() {
   const hojeMes = hoje.getMonth() + 1;
   
   const filtered = jovens.filter((j) =>
-    j.nome.toLowerCase().includes(search.toLowerCase()) ||
-    (j.email ?? "").toLowerCase().includes(search.toLowerCase())
+    j.nome.toLowerCase().includes(search.toLowerCase())
   );
 
   const aniversariantes = jovens.filter((j) => {
@@ -322,7 +319,6 @@ export default function JovensPage() {
                 />
               )}
             />
-            <Input label="E-mail" {...register("email")} type="email" placeholder="joao@email.com" />
             <Controller
               control={control}
               name="telefone"

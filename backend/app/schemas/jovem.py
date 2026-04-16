@@ -1,11 +1,11 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, field_validator
 from datetime import date, datetime
 from typing import Optional
 
 
+
 class JovemBase(BaseModel):
     nome: str
-    email: Optional[str] = None
     telefone: Optional[str] = None
     data_nascimento: date
     endereco: Optional[str] = None
@@ -14,7 +14,7 @@ class JovemBase(BaseModel):
     habilitado_financeiro: bool = True
     ativo: bool = True
 
-    @field_validator("email", "telefone", mode="before")
+    @field_validator("telefone", mode="before")
     @classmethod
     def empty_str_to_none(cls, v: object) -> object:
         if isinstance(v, str) and not v.strip():
@@ -28,7 +28,6 @@ class JovemCreate(JovemBase):
 
 class JovemUpdate(BaseModel):
     nome: Optional[str] = None
-    email: Optional[str] = None
     telefone: Optional[str] = None
     data_nascimento: Optional[date] = None
     endereco: Optional[str] = None
@@ -37,7 +36,7 @@ class JovemUpdate(BaseModel):
     habilitado_financeiro: Optional[bool] = None
     ativo: Optional[bool] = None
 
-    @field_validator("email", "telefone", mode="before")
+    @field_validator("telefone", mode="before")
     @classmethod
     def empty_str_to_none(cls, v: object) -> object:
         if isinstance(v, str) and not v.strip():

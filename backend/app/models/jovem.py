@@ -9,7 +9,6 @@ class Jovem(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     nome: Mapped[str] = mapped_column(String(150), nullable=False)
-    email: Mapped[str | None] = mapped_column(String(150), unique=True, nullable=True)
     telefone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     data_nascimento: Mapped[date] = mapped_column(Date, nullable=False)
     endereco: Mapped[str | None] = mapped_column(String(250), nullable=True)

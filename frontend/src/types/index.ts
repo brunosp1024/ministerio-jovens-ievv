@@ -4,7 +4,6 @@ export type Perfil = "Liderança" | "Diretoria" | "Mídia" | "Tesouraria" | "Int
 export interface Jovem {
   id: number;
   nome: string;
-  email?: string;
   telefone?: string;
   data_nascimento: string;
   endereco?: string;
@@ -18,7 +17,6 @@ export interface Jovem {
 
 export interface JovemCreate {
   nome: string;
-  email?: string;
   telefone?: string;
   data_nascimento: string;
   endereco?: string;
