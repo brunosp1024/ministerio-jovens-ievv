@@ -27,7 +27,6 @@ async def importar_jovens(file_path):
             reader = csv.DictReader(csvfile)
             for row in reader:
                 nome = row.get("Nome")
-                email = row.get("E-mail")
                 telefone = row.get("Telefone")
                 data_nascimento = parse_date(row.get("Data de Nascimento"))
                 foto_url = row.get("Foto URL")
@@ -35,22 +34,21 @@ async def importar_jovens(file_path):
                 financeiro = parse_bool(row.get("Financeiro"))
                 status = parse_bool(row.get("Status"))
 
-                # Verifica se já existe jovem com mesmo nome, email ou telefone
+                # Verifica se já existe jovem com mesmo nome ou telefone
                 result = await db.execute(
                     text(
-                        "SELECT nome, email, telefone FROM jovens WHERE nome = :nome OR email = :email OR telefone = :telefone LIMIT 1"
+                        "SELECT nome, telefone FROM jovens WHERE nome = :nome OR telefone = :telefone LIMIT 1"
                     ),
-                    {"nome": nome, "email": email, "telefone": telefone}
+                    {"nome": nome, "telefone": telefone}
                 )
                 conflict = result.first()
                 if conflict:
-                    print(f"Ignorado: {nome} (conflito com nome, email ou telefone já cadastrado)")
+                    print(f"Ignorado: {nome} (conflito com nome ou telefone já cadastrado)")
                     ignoreds += 1
                     continue
 
                 jovem = JovemCreate(
                     nome=nome,
-                    email=email,
                     telefone=telefone,
                     data_nascimento=data_nascimento,
                     endereco=endereco,
