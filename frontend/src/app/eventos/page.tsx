@@ -45,10 +45,16 @@ export default function EventosPage() {
     onError: () => toast.error("Erro ao remover evento."),
   });
 
-  function openCreate() { reset({}); setEditing(null); setModalOpen(true); }
+  function openCreate() { reset({ ativo: true }); setEditing(null); setModalOpen(true); }
   function openEdit(e: Evento) {
     setEditing(e);
-    reset({ nome: e.nome, descricao: e.descricao, data_evento: e.data_evento.slice(0, 16), local: e.local, ativo: e.ativo });
+    reset({
+      nome: e.nome,
+      descricao: e.descricao,
+      data_evento: e.data_evento.slice(0, 16),
+      local: e.local,
+      ativo: typeof e.ativo === "string" ? e.ativo === "true" : !!e.ativo
+    });
     setModalOpen(true);
   }
   function closeModal() { setModalOpen(false); setEditing(null); reset({}); }
@@ -163,7 +169,8 @@ export default function EventosPage() {
           <Textarea label="Descrição" {...register("descricao")} placeholder="Descreva o evento..." />
           <Select
             label="Status"
-            {...register("ativo", { setValueAs: (v) => v === "true" })}
+            defaultValue="true"
+            {...register("ativo", { setValueAs: (v) => v === "true" ? true : v === "false" ? false : v })}
             options={[
               { label: "Ativo", value: "true" },
               { label: "Inativo", value: "false" }
