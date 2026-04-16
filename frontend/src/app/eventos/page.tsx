@@ -153,10 +153,14 @@ export default function EventosPage() {
           />
           <Input label="Local" {...register("local")} placeholder="Ex: Igreja Sede" />
           <Textarea label="Descrição" {...register("descricao")} placeholder="Descreva o evento..." />
-          <Select label="Status" {...register("ativo", { setValueAs: (v) => v === "true" })}>
-            <option value="true">Ativo</option>
-            <option value="false">Inativo</option>
-          </Select>
+          <Select
+            label="Status"
+            {...register("ativo", { setValueAs: (v) => v === "true" })}
+            options={[
+              { label: "Ativo", value: "true" },
+              { label: "Inativo", value: "false" }
+            ]}
+          />
           <div className="form-actions">
             <Button variant="outline" type="button" onClick={closeModal}>Cancelar</Button>
             <Button type="submit" loading={createMut.isPending || updateMut.isPending}>{editing ? "Salvar" : "Criar Evento"}</Button>
