@@ -33,9 +33,6 @@ yarn-error.log*
 whatsapp-webjs/.wwebjs_auth/
 whatsapp-webjs/.wwebjs_cache/
 
-# Docker
-# *.dockerignore
-
 # OS
 .DS_Store
 Thumbs.db
@@ -44,3 +41,9 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Backup
+scripts/database_backup/logs/
+scripts/database_backup/backups/
+*.sql.gz
+
