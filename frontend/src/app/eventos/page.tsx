@@ -65,14 +65,11 @@ export default function EventosPage() {
 
   const futuros = eventos
     .filter((e) => new Date(e.data_evento) >= new Date())
-    .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento));
-  
+    .sort((a, b) => Number(new Date(a.data_evento)) - Number(new Date(b.data_evento)));
+
   const passados = eventos
     .filter((e) => new Date(e.data_evento) < new Date())
-    .sort((a, b) => new Date(b.data_evento) - new Date(a.data_evento));
-
-  console.log('futurosssss',);
-  
+    .sort((a, b) => Number(new Date(b.data_evento)) - Number(new Date(a.data_evento)));
 
   function requireAuth(action: () => void) {
     if (!isAuthenticated) {
