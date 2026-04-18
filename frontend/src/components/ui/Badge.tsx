@@ -1,22 +1,25 @@
 import React from "react";
 
 interface BadgeProps {
-  color: string;
+  bgColor: string;
+  textColor: string;
+  fontSize?: number;
   children: React.ReactNode;
 }
 
-export default function Badge({ color, children }: BadgeProps) {
+export default function Badge({ bgColor, textColor, fontSize = 9.5, children }: BadgeProps) {
   return (
     <span
       style={{
-        background: color,
-        color: "#fff",
+        background: bgColor,
+        color: textColor,
+        fontSize: fontSize,
         borderRadius: 12,
         padding: "0 6px",
-        fontSize: 9.5,
         fontWeight: 600,
         display: "inline-block",
-        opacity: 0.7,
+        opacity: 0.6,
+        border: `1px solid #5b7fa7`,
       }}
     >
       {children}

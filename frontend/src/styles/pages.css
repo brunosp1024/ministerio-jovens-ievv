@@ -167,7 +167,11 @@
   }
 
   .jovem__telefone {
-    @apply text-slate-600;
+    @apply text-slate-600 whitespace-nowrap;
+  }
+
+  .jovem__financeiro {
+    @apply whitespace-nowrap
   }
 
   .jovem__age {
@@ -256,5 +260,14 @@
 
   .venda-form__hint {
     @apply text-xs text-slate-400 mt-1;
+  }
+
+  /* Mobile young cards */
+  .jovem-card {
+    @apply bg-white rounded-lg shadow-sm p-3 flex flex-col border border-gray-200;
+  }
+
+  .image-jovem-card {
+    @apply w-12 h-12 rounded-full object-cover border border-gray-300;
   }
 }

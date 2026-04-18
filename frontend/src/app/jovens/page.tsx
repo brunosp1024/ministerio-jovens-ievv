@@ -32,6 +32,11 @@ export default function JovensPage() {
     { label: "Mídia", value: "midia" },
     { label: "Tesouraria", value: "tesouraria" }
   ]
+
+  const meses = [
+    "janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
+  ];
   
   const { data: jovens = [], isLoading } = useQuery({
     queryKey: ["jovens"],
@@ -175,7 +180,7 @@ export default function JovensPage() {
           <Search className="search-icon" />
           <input
             className="search-input"
-            placeholder="Buscar por nome ou e-mail..."
+            placeholder="Buscar por nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -186,81 +191,148 @@ export default function JovensPage() {
         ) : filtered.length === 0 ? (
           <p className="empty-state">Nenhum jovem encontrado.</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr className="data-table__head-row">
-                  {[
-                    "Nome",
-                    <span key="Nascimento / Idadess" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
-                    "Telefone",
-                    "Faixa Etária",
-                    "Financeiro",
-                    "Status",
-                    ...(isAuthenticated ? ["Ações"] : [])
-                  ].map((h) => (
-                    <th key={typeof h === "string" ? h : h.key} className="data-table__head-cell">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="data-table__body">
-                {filtered.map((j) => {
-                  const idade = calcularIdade(j.data_nascimento);
-                  const faixa = faixaEtaria(idade);
-                  return (
-                    <tr key={j.id} className="data-table__row">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2">
-                          {j.foto_url ? (
-                            <img
-                              src={j.foto_url}
-                              alt={j.nome}
-                              className="data-table__avatar"
-                              style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
-                            />
-                          ) : (
-                            <div className="data-table__avatar data-table__avatar--blue">
-                              {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
-                            </div>
-                          )}
-                          <div>
-                            <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
-                            <Badge color={faixa.color}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
-                          </div>
+          <>
+            {/* Mobile: Cards */}
+            <div
+              className="jovens-cards-list flex flex-col gap-4 md:hidden"
+            >
+              {filtered.map((j) => {
+                const idade = calcularIdade(j.data_nascimento);
+                const faixa = faixaEtaria(idade);
+                return (
+                  <div key={j.id} className="jovem-card">
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+
+                      {/* Imagem perfil */}
+                      {j.foto_url ? (
+                        <img src={j.foto_url} alt={j.nome} className="image-jovem-card" />
+                      ) : (
+                        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#3b82f6", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 22 }}>
+                          {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
                         </div>
-                      </td>
-                      <td className="data-table__cell">
-                        {formatDate(j.data_nascimento)} <br />
-                        <span className="jovem__age">({idade} anos)</span>
-                      </td>
-                      <td className="data-table__cell">
-                        {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge color={faixa.color}>{faixa.label}</Badge>
-                      </td>
-                      <td className="py-3 pr-4">
-                        <span className={j.habilitado_financeiro ? "badge-green" : "badge-red"}>
-                          {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
+                      )}
+
+                      {/* Nome e perfil do jovem */}
+                      <div style={{ display: "flex", flexDirection: "column", top: -4 }}>
+                        <span style={{ fontWeight: 600, fontSize: 18 }}>{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</span>
+                        <span style={{ display: "inline-block", position: "relative", top: -4 }}>
+                          <Badge bgColor="#fff" textColor="#0d1f3c" fontSize={10}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
                         </span>
-                      </td>
-                      <td className="py-3 pr-4">
-                        <span className={j.ativo ? "badge-green" : "badge-red"}>{j.ativo ? "Ativo" : "Inativo"}</span>
-                      </td>
+                      </div>
+                    </div>
+
+                    {/* Informações adicionais + botões */}
+                    <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 6, width: "100%" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <span style={{ fontWeight: 600, color: "#64748b", fontSize: 12 }}>Aniversário:</span>
+                          <span style={{ fontSize: 12, opacity: 0.7 }}>
+                            {(() => {
+                              const [ano, mes, dia] = String(j.data_nascimento).split("-").map(Number);
+                              if (!ano || !mes || !dia) return "";
+                              return `${dia} de ${meses[mes-1]} (${idade} anos)`;
+                            })()}
+                          </span>
+                        </div>
+                        {j.telefone && (
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <span style={{ fontWeight: 600, color: "#64748b", fontSize: 12 }}>Telefone:</span>
+                            <span style={{ fontSize: 12, opacity: 0.7 }}>{j.telefone}</span>
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <span style={{ fontWeight: 600, color: "#64748b", fontSize: 12 }}>Faixa Etária:</span>
+                          <Badge bgColor={faixa.color} textColor="#fff">{faixa.label}</Badge>
+                        </div>
+                      </div>
                       {isAuthenticated && (
-                        <td className="py-3">
-                          <div className="flex items-center gap-1">
-                            <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
-                            <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", justifyContent: "flex-start" }}>
+                          <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: Tabela */}
+            <div className="overflow-x-auto hidden md:block">
+              <table className="data-table">
+                <thead>
+                  <tr className="data-table__head-row">
+                    {[
+                      "Nome",
+                      <span key="Nascimento / Idades" style={{ whiteSpace: "nowrap" }}>Nascimento / Idade</span>,
+                      "Telefone",
+                      "Faixa Etária",
+                      "Financeiro",
+                      "Status",
+                      ...(isAuthenticated ? ["Ações"] : [])
+                    ].map((h) => (
+                      <th key={typeof h === "string" ? h : h.key} className="data-table__head-cell">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="data-table__body">
+                  {filtered.map((j) => {
+                    const idade = calcularIdade(j.data_nascimento);
+                    const faixa = faixaEtaria(idade);
+                    return (
+                      <tr key={j.id} className="data-table__row">
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-2">
+                            {j.foto_url ? (
+                              <img
+                                src={j.foto_url}
+                                alt={j.nome}
+                                className="data-table__avatar"
+                              />
+                            ) : (
+                              <div className="data-table__avatar data-table__avatar--blue">
+                                {j.nome.split(" ").filter(Boolean).slice(0, 2).map((n) => n.charAt(0).toUpperCase()).join("")}
+                              </div>
+                            )}
+                            <div>
+                              <p className="jovem__name">{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</p>
+                              <Badge bgColor="#fff" textColor="#0d1f3c" fontSize={10}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
+                            </div>
                           </div>
                         </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <td className="data-table__cell">
+                          {formatDate(j.data_nascimento)} <br />
+                          <span className="jovem__age">({idade} anos)</span>
+                        </td>
+                        <td className="data-table__cell">
+                          {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
+                        </td>
+                        <td className="py-3 pr-4" style={{ whiteSpace: "nowrap" }}>
+                          <Badge bgColor={faixa.color} textColor="#fff">{faixa.label}</Badge>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className={`jovem__financeiro ${j.habilitado_financeiro ? "badge-green" : "badge-red"}`}>
+                            {j.habilitado_financeiro ? "Habilitado" : "Não habilitado"}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-4">
+                          <span className={j.ativo ? "badge-green" : "badge-red"}>{j.ativo ? "Ativo" : "Inativo"}</span>
+                        </td>
+                        {isAuthenticated && (
+                          <td className="py-3">
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
+                              <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
