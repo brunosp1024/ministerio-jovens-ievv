@@ -32,6 +32,7 @@ class VendaSemanalBase(BaseModel):
     valor_dinheiro: Decimal = Decimal("0")
     valor_pix: Decimal = Decimal("0")
     observacoes: Optional[str] = None
+    evento_id: Optional[int] = None
 
 
 class VendaSemanalCreate(VendaSemanalBase):
@@ -44,6 +45,7 @@ class VendaSemanalUpdate(BaseModel):
     valor_dinheiro: Optional[Decimal] = None
     valor_pix: Optional[Decimal] = None
     observacoes: Optional[str] = None
+    evento_id: Optional[int] = None
 
 
 class VendaSemanalResponse(VendaSemanalBase):

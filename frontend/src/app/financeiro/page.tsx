@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { financeiroApi, jovensApi } from "@/services/api";
+import { financeiroApi, jovensApi, eventosApi } from "@/services/api";
 import {
   DollarSign, Plus, Filter, TrendingUp, TrendingDown,
-  Wallet, CreditCard, Banknote, ChevronDown, ChevronUp, Pencil, Trash2, Users2
+  ChevronDown, ChevronUp, Pencil, Trash2, Users2, Banknote
 } from "lucide-react";
 import { formatCurrency, formatDate, MESES, mesAtual, anoAtual } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -17,7 +17,7 @@ import DistribuirGanhosModal from "@/components/financeiro/DistribuirGanhosModal
 import { VendaSemanal } from "@/types";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-
+import Select from "@/components/ui/Select";
 export default function FinanceiroPage() {
   const qc = useQueryClient();
   const { isAuthenticated, openLogin } = useAuth();
@@ -32,12 +32,14 @@ export default function FinanceiroPage() {
   const [deleteTarget, setDeleteTarget] = useState<VendaSemanal | null>(null);
   const [distribuirVenda, setDistribuirVenda] = useState<VendaSemanal | null>(null);
   const [expandedVendas, setExpandedVendas] = useState<Set<number>>(new Set());
-
+  const [eventoAlvo, setEventoAlvo] = useState("");
+  const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
   const { data: jovensHab = [] } = useQuery({ queryKey: ["jovens-hab"], queryFn: jovensApi.habilitados });
 
   const filtros = {
     semana_inicio: semanaInicio || undefined,
     semana_fim: semanaFim || undefined,
+    evento_id: eventoAlvo || undefined,
   };
 
   const { data: vendas = [], isLoading } = useQuery({
@@ -109,28 +111,70 @@ export default function FinanceiroPage() {
 
       {/* Filtros */}
       <div className="card">
-        <div className="filter-header">
-          <Filter className="filter-header__icon" />
-          <h2 className="filter-header__title">Filtros</h2>
-        </div>
-        <div className="filter-grid">
-          <div className="form-group">
-            <label className="form-label">Início do período</label>
-            <DatePicker
-              value={semanaInicio}
-              onChange={setSemanaInicio}
-              placeholder="Selecione o início"
-            />
+        <details>
+          {/** Ícone de colapso à direita do summary dos filtros */}
+          <summary
+            style={{
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              justifyContent: "space-between"
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Filter className="filter-header__icon" />
+              Filtros
+            </span>
+            <span style={{ marginLeft: 12, display: 'flex', alignItems: 'center' }}>
+              <span className="collapse-icon">
+                {/* O details[open] selector não é acessível em React, então usamos CSS para girar o ícone */}
+                <ChevronDown className="w-5 h-5 text-slate-400 details-chevron" />
+              </span>
+            </span>
+            <style>{`
+              details[open] .details-chevron {
+                transform: rotate(180deg);
+                transition: transform 0.2s;
+              }
+              .details-chevron {
+                transition: transform 0.2s;
+              }
+            `}</style>
+          </summary>
+          <div className="filter-grid" style={{ marginTop: 12 }}>
+            <div className="form-group">
+              <label className="form-label">Início do período</label>
+              <DatePicker
+                value={semanaInicio}
+                onChange={setSemanaInicio}
+                placeholder="Selecione o início"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Fim do período</label>
+              <DatePicker
+                value={semanaFim}
+                onChange={setSemanaFim}
+                placeholder="Selecione o fim"
+              />
+            </div>
+            <div className="form-group">
+              <Select
+                label="Evento"
+                value={eventoAlvo}
+                className="py-[0.6rem]"
+                onChange={e => setEventoAlvo(e.target.value)}
+                options={[
+                  { label: "Todos", value: "" },
+                  ...eventos.map(ev => ({ label: ev.nome, value: String(ev.id) }))
+                ]}
+              />
+            </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">Fim do período</label>
-            <DatePicker
-              value={semanaFim}
-              onChange={setSemanaFim}
-              placeholder="Selecione o fim"
-            />
-          </div>
-        </div>
+        </details>
       </div>
 
       {/* Resumo geral */}

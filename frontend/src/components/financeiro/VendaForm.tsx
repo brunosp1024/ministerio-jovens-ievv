@@ -2,11 +2,14 @@
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { financeiroApi } from "@/services/api";
-import { VendaSemanal, VendaSemanalCreate } from "@/types";
+import { VendaSemanal, VendaSemanalCreate, Evento } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { eventosApi } from "@/services/api";
 import Button from "@/components/ui/Button";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 import DatePicker from "@/components/ui/DatePicker";
 import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
 import { centsToNormalizedCurrency, normalizedCurrencyToCents } from "@/lib/currency";
 import { Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,6 +21,7 @@ interface Props {
 }
 
 export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
+  const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
   const { register, handleSubmit, control, getValues, setValue } = useForm<VendaSemanalCreate>({
     defaultValues: editing
       ? {
@@ -28,6 +32,7 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
           valor_dinheiro: editing.valor_dinheiro,
           valor_pix: editing.valor_pix,
           observacoes: editing.observacoes,
+          evento_id: editing.evento_id,
           itens: editing.itens.map((i) => ({
             produto: i.produto,
             quantidade: i.quantidade,
@@ -252,6 +257,16 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
         <p className="venda-form__hint">Produto | Qtd | Preço unit. | Total</p>
       </div>
 
+      <div className="form-group">
+        <Select
+          label="Evento"
+          {...register("evento_id")}
+          options={[
+            { label: "Selecione um evento", value: "" },
+            ...eventos.map(ev => ({ label: ev.nome, value: String(ev.id) }))
+          ]}
+        />
+      </div>
       <Input label="Observações" {...register("observacoes")} placeholder="Notas adicionais..." />
 
       <div className="form-actions">

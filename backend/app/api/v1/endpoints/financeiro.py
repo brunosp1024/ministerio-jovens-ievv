@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import date
@@ -25,6 +26,7 @@ async def listar_vendas(
     semana_fim: Optional[date] = None,
     mes: Optional[int] = Query(None, ge=1, le=12),
     ano: Optional[int] = Query(None, ge=2000),
+    evento_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     service = FinanceiroService(db)
@@ -33,6 +35,7 @@ async def listar_vendas(
         semana_fim=semana_fim,
         mes=mes,
         ano=ano,
+        evento_id=evento_id,
     )
 
 

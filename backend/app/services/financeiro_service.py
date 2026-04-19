@@ -22,6 +22,7 @@ class FinanceiroService:
         semana_fim: Optional[date] = None,
         mes: Optional[int] = None,
         ano: Optional[int] = None,
+        evento_id: Optional[int] = None,
     ) -> List[VendaSemanal]:
         query = select(VendaSemanal).options(selectinload(VendaSemanal.itens))
         if semana_inicio:
@@ -32,6 +33,8 @@ class FinanceiroService:
             query = query.where(extract("month", VendaSemanal.semana_inicio) == mes)
         if ano:
             query = query.where(extract("year", VendaSemanal.semana_inicio) == ano)
+        if evento_id:
+            query = query.where(VendaSemanal.evento_id == evento_id)
         query = query.order_by(VendaSemanal.semana_inicio.desc())
         result = await self.db.execute(query)
         return list(result.scalars().all())

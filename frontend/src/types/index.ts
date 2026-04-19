@@ -78,6 +78,8 @@ export interface VendaSemanal {
   valor_pix: string;
   lucro_liquido: string;
   observacoes?: string;
+  evento_id?: number;
+  evento?: Evento;
   itens: ItemVenda[];
   created_at: string;
   updated_at: string;
@@ -91,6 +93,7 @@ export interface VendaSemanalCreate {
   valor_dinheiro?: string;
   valor_pix?: string;
   observacoes?: string;
+  evento_id?: number;
   itens?: ItemVendaCreate[];
 }
 
@@ -144,6 +147,7 @@ export interface FiltroVendas {
   semana_fim?: string;
   mes?: number;
   ano?: number;
+  evento_id?: number;
 }
 
 export interface AuthUser {

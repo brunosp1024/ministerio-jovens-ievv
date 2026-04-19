@@ -16,9 +16,11 @@ class VendaSemanal(Base):
     valor_dinheiro: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     valor_pix: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     observacoes: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    evento_id: Mapped[int | None] = mapped_column(ForeignKey("eventos.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
+    evento: Mapped["Evento"] = relationship("Evento")
     itens: Mapped[list["ItemVenda"]] = relationship(
         "ItemVenda", back_populates="venda", cascade="all, delete-orphan"
     )
