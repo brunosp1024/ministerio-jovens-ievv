@@ -96,6 +96,15 @@ class ResumoFinanceiro(BaseModel):
     lucro_liquido: Decimal
 
 
+class ResumoCaixa(BaseModel):
+    total_caixa: Decimal
+    total_dinheiro: Decimal
+    total_pix: Decimal
+
+    class Config:
+        from_attributes = True
+
+
 class RelatorioSemanal(BaseModel):
     venda: VendaSemanalResponse
     lucro_liquido: Decimal

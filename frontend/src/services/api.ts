@@ -8,6 +8,7 @@ import type {
   ResumoFinanceiro, FiltroVendas,
   Notificacao,
   AuthSession, AuthUser, LoginPayload,
+  ResumoCaixaResponse,
 } from "@/types";
 
 const api = axios.create({
@@ -65,6 +66,9 @@ export const financeiroApi = {
   ganhosMensais: (mes: number, ano: number) =>
     api.get<GanhoMensalJovem[]>('/financeiro/ganhos/mensais', { params: { mes, ano } }).then((r) => r.data),
   resumo: () => api.get<ResumoFinanceiro>("/financeiro/resumo").then((r) => r.data),
+  resumoCaixa: () => api.get<ResumoCaixaResponse>("/financeiro/resumo-caixa").then((r) => r.data),
+  atualizarResumoCaixa: (data: { total_caixa: string; total_dinheiro: string; total_pix: string }) =>
+    api.patch<ResumoCaixaResponse>("/financeiro/resumo-caixa", data).then((r) => r.data),
   ganhosPorVenda: (venda_id: number) =>
     api.get<GanhoVenda[]>(`/financeiro/ganhos/venda/${venda_id}`).then((r) => r.data),
 };

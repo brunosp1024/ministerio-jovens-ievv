@@ -4,11 +4,11 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from decimal import Decimal
 from datetime import date
-from app.models.financeiro import VendaSemanal, ItemVenda, GanhoJovem
+from app.models.financeiro import VendaSemanal, ItemVenda, GanhoJovem, ResumoCaixa
 from app.models.jovem import Jovem
 from app.schemas.financeiro import (
     VendaSemanalCreate, VendaSemanalUpdate, DistribuirGanhosRequest,
-    GanhoMensalJovem, ResumoFinanceiro
+    GanhoMensalJovem, ResumoFinanceiro, ResumoCaixa as ResumoCaixaResponse
 )
 
 
@@ -56,6 +56,7 @@ class FinanceiroService:
             item = ItemVenda(**item_data.model_dump(), venda_id=venda.id)
             self.db.add(item)
         await self.db.commit()
+        await self.atualizar_resumo_caixa_em_nova_venda(venda)
         return await self.get_venda_by_id(venda.id)
 
     async def update_venda(self, venda_id: int, data: VendaSemanalUpdate) -> Optional[VendaSemanal]:
@@ -156,3 +157,40 @@ class FinanceiroService:
             select(GanhoJovem).where(GanhoJovem.venda_id == venda_id)
         )
         return list(result.scalars().all())
+
+    async def atualizar_resumo_caixa_manual(self, resumo_data: ResumoCaixaResponse) -> ResumoCaixa:
+        resumo = await self.db.execute(select(ResumoCaixa).limit(1))
+        resumo_obj = resumo.scalar_one_or_none()
+        if not resumo_obj:
+            resumo_obj = ResumoCaixa(
+                total_caixa=resumo_data.total_caixa,
+                total_dinheiro=resumo_data.total_dinheiro,
+                total_pix=resumo_data.total_pix,
+            )
+            self.db.add(resumo_obj)
+            await self.db.flush()
+        else:
+            resumo_obj.total_caixa = resumo_data.total_caixa
+            resumo_obj.total_dinheiro = resumo_data.total_dinheiro
+            resumo_obj.total_pix = resumo_data.total_pix
+        await self.db.commit()
+        await self.db.refresh(resumo_obj)
+        return resumo_obj
+
+    async def atualizar_resumo_caixa_em_nova_venda(self, venda: VendaSemanal):
+        resumo = await self.db.execute(select(ResumoCaixa).limit(1))
+        resumo_obj = resumo.scalar_one_or_none()
+        if not resumo_obj:
+            resumo_obj = ResumoCaixa(
+                total_caixa=Decimal(0),
+                total_dinheiro=Decimal(0),
+                total_pix=Decimal(0),
+            )
+            self.db.add(resumo_obj)
+            await self.db.flush()
+        # Atualiza os campos
+        resumo_obj.total_dinheiro += venda.valor_dinheiro
+        resumo_obj.total_pix += venda.valor_pix
+        resumo_obj.total_caixa = resumo_obj.total_dinheiro + resumo_obj.total_pix
+        await self.db.commit()
+        return resumo_obj

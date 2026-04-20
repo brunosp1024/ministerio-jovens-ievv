@@ -23,7 +23,6 @@ def upgrade() -> None:
     op.create_table('jovens',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('nome', sa.String(length=150), nullable=False),
-    sa.Column('email', sa.String(length=150), nullable=True),
     sa.Column('telefone', sa.String(length=20), nullable=True),
     sa.Column('data_nascimento', sa.Date(), nullable=False),
     sa.Column('endereco', sa.String(length=250), nullable=True),
@@ -33,7 +32,6 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email')
     )
     op.create_index(op.f('ix_jovens_id'), 'jovens', ['id'], unique=False)
     op.create_table('projetos',

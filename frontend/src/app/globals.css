@@ -9,6 +9,7 @@
 @import "../styles/cards.css";
 @import "../styles/tables.css";
 @import "../styles/pages.css";
+@import "../styles/financeiro.css";
 
 @tailwind base;
 @tailwind components;

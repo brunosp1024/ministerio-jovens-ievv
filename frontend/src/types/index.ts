@@ -130,6 +130,13 @@ export interface ResumoFinanceiro {
   lucro_liquido: string;
 }
 
+export interface ResumoCaixaResponse {
+  total_caixa: string;
+  total_dinheiro: string;
+  total_pix: string;
+  updated_at: string;
+}
+
 // ─── Notificação ─────────────────────────────────────────────────────────────
 export interface Notificacao {
   id: number;

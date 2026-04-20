@@ -7,9 +7,10 @@ from app.api.deps import get_current_username, get_db
 from app.services.financeiro_service import FinanceiroService
 from app.schemas.financeiro import (
     VendaSemanalCreate, VendaSemanalUpdate, VendaSemanalResponse,
-    DistribuirGanhosRequest, GanhoJovemResponse, GanhoMensalJovem,
-    ResumoFinanceiro,
+    DistribuirGanhosRequest, GanhoMensalJovem,
+    ResumoFinanceiro, ResumoCaixa as ResumoCaixaResponse,
 )
+from app.models.financeiro import ResumoCaixa
 
 router = APIRouter(prefix="/financeiro", tags=["financeiro"])
 
@@ -18,6 +19,25 @@ router = APIRouter(prefix="/financeiro", tags=["financeiro"])
 async def resumo_financeiro(db: AsyncSession = Depends(get_db)):
     service = FinanceiroService(db)
     return await service.get_resumo()
+
+
+@router.get("/resumo-caixa", response_model=ResumoCaixaResponse)
+async def resumo_caixa(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(ResumoCaixa).limit(1))
+    resumo = result.scalar_one_or_none()
+    if not resumo:
+        raise HTTPException(status_code=404, detail="Resumo do caixa não encontrado")
+    return resumo
+
+
+@router.patch("/resumo-caixa", response_model=ResumoCaixaResponse)
+async def atualizar_resumo_caixa(
+    data: ResumoCaixaResponse,
+    db: AsyncSession = Depends(get_db),
+    _: str = Depends(get_current_username),
+):
+    service = FinanceiroService(db)
+    return await service.atualizar_resumo_caixa_manual(data)
 
 
 @router.get("/vendas", response_model=List[VendaSemanalResponse])

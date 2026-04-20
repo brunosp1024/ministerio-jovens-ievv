@@ -5,6 +5,16 @@ from decimal import Decimal
 from app.db.session import Base
 
 
+class ResumoCaixa(Base):
+    __tablename__ = "resumo_caixa"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    total_caixa: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    total_dinheiro: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    total_pix: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
 class VendaSemanal(Base):
     __tablename__ = "vendas_semanais"
 
