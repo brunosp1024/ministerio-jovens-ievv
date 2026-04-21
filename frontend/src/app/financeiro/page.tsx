@@ -456,19 +456,16 @@ export default function FinanceiroPage() {
             <p className="empty-state">Nenhum jovem habilitado financeiramente.</p>
           ) : (
             (() => {
-              // Função para iniciar operação de adição/subtração
               const iniciarOperacao = (jovemId: number, tipo: "add" | "sub") => {
                 setJovemOperando(jovemId);
                 setTipoOperacao(tipo);
                 setValorOperacao("");
               };
-              // Função para cancelar operação
               const cancelarOperacao = () => {
                 setJovemOperando(null);
                 setTipoOperacao(null);
                 setValorOperacao("");
               };
-              // Função para salvar operação: cria ganho manual
               const salvarOperacao = async (jovemId: number) => {
                 setSalvando(true);
                 try {
@@ -490,80 +487,181 @@ export default function FinanceiroPage() {
                 }
               };
               return (
-                <div className="overflow-x-auto">
-                  <table className="data-table">
-                    <thead>
-                      <tr className="data-table__head-row">
-                        <th className="data-table__head-cell">Jovem</th>
-                        <th className="data-table__head-cell--right">Total no Mês</th>
-                        {isAuthenticated && <th className="data-table__head-cell--right">Ações</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="data-table__body">
-                      {ganhosOrdenados.map((g, idx) => {
-                        const temValor = parseFloat(g.total_mensal) > 0;
-                        const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
-                        const operando = jovemOperando === g.jovem_id;
-                        return (
-                          <tr key={g.jovem_id} className={`data-table__row${classe ? ` ${classe}` : ""}`}>
-                            <td className="data-table__cell">
-                              <div className="flex items-center gap-2">
-                                <div className="data-table__avatar--sm data-table__avatar--purple">
-                                  {g.jovem_nome.charAt(0)}
-                                </div>
-                                <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
-                                {temValor && classe && (
-                                  <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="data-table__cell--right font-semibold text-green-600">
-                              {formatCurrency(g.total_mensal)}
-                            </td>
-                            {isAuthenticated && (
-                              <td className="data-table__cell--right">
-                                {operando ? (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
-                                    <CurrencyInput
-                                      value={valorOperacao}
-                                      onValueChange={setValorOperacao}
-                                      className="input-inline-edit"
-                                      style={{ width: 90, textAlign: "right" }}
-                                      disabled={salvando}
-                                      placeholder="R$ 0,00"
-                                    />
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
-                                      <Check className="w-4 h-4" />
-                                    </Button>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
-                                      <X className="w-4 h-4" />
-                                    </Button>
+                <>
+                  {/* Tabela para desktop */}
+                  <div className="ganhos-table-desktop">
+                    <table className="data-table">
+                      <thead>
+                        <tr className="data-table__head-row">
+                          <th className="data-table__head-cell">Jovem</th>
+                          <th className="data-table__head-cell--right">Total arrecadado</th>
+                          {isAuthenticated && <th className="data-table__head-cell--right">Ações</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="data-table__body">
+                        {ganhosOrdenados.map((g, idx) => {
+                          const temValor = parseFloat(g.total_mensal) > 0;
+                          const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
+                          const operando = jovemOperando === g.jovem_id;
+                          return (
+                            <tr key={g.jovem_id} className={`data-table__row${classe ? ` ${classe}` : ""}`}>
+                              <td className="data-table__cell">
+                                <div className="flex items-center gap-2">
+                                  <div className="data-table__avatar--sm data-table__avatar--purple">
+                                    {g.jovem_nome.charAt(0)}
                                   </div>
-                                ) : (
-                                  <>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
-                                      +
-                                    </Button>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
-                                      -
-                                    </Button>
-                                  </>
-                                )}
+                                  <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
+                                  {temValor && classe && idx < 3 ? (
+                                    <span
+                                      className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
+                                      title={`Medalha de ${idx + 1}º lugar`}
+                                      style={{ display: 'inline-flex', alignItems: 'center' }}
+                                    >
+                                      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
+                                        {/* Faixa/fita abaixo do círculo */}
+                                        <g>
+                                          <rect x="8" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                          <rect x="17" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                        </g>
+                                        {/* Medalha */}
+                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                        <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
+                                        <text x="14" y="22" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#333">{idx + 1}</text>
+                                      </svg>
+                                    </span>
+                                  ) : temValor && classe ? (
+                                    <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
+                                  ) : null}
+                                </div>
                               </td>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                    <tfoot>
-                      <tr className="data-table__footer-row">
-                        <td className="data-table__footer-cell">Total</td>
-                        <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
-                        {isAuthenticated && <td />}
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
+                              <td className="data-table__cell--right font-semibold text-green-600">
+                                {formatCurrency(g.total_mensal)}
+                              </td>
+                              {isAuthenticated && (
+                                <td className="data-table__cell--right">
+                                  {operando ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
+                                      <CurrencyInput
+                                        value={valorOperacao}
+                                        onValueChange={setValorOperacao}
+                                        className="input-inline-edit"
+                                        style={{ width: 90, textAlign: "right" }}
+                                        disabled={salvando}
+                                        placeholder="R$ 0,00"
+                                      />
+                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                                        <Check className="w-4 h-4" />
+                                      </Button>
+                                      <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                                        <X className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                        +
+                                      </Button>
+                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                        -
+                                      </Button>
+                                    </>
+                                  )}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr className="data-table__footer-row">
+                          <td className="data-table__footer-cell">Total</td>
+                          <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
+                          {isAuthenticated && <td />}
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Cards para mobile */}
+                  <div className="ganhos-grid-responsive">
+                    {ganhosOrdenados.map((g, idx) => {
+                      const temValor = parseFloat(g.total_mensal) > 0;
+                      const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
+                      const operando = jovemOperando === g.jovem_id;
+                      return (
+                        <div key={g.jovem_id} className={`ganho-card ${classe}`.trim()}>
+                          <div className="ganho-card__header-mobile">
+                            <div className="data-table__avatar--sm data-table__avatar--purple">
+                              {g.jovem_nome.charAt(0)}
+                            </div>
+                            <div className="ganho-card__header-mobile-nome">
+                              <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
+                              {temValor && classe && idx < 3 ? (
+                                    <span
+                                      className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
+                                      title={`Medalha de ${idx + 1}º lugar`}
+                                      style={{ display: 'inline-flex', alignItems: 'center' }}
+                                    >
+                                      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
+                                        {/* Faixa/fita abaixo do círculo */}
+                                        <g>
+                                          <rect x="8" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                          <rect x="17" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                        </g>
+                                        {/* Medalha */}
+                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                        <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
+                                        <text x="14" y="22" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#333">{idx + 1}</text>
+                                      </svg>
+                                    </span>
+                                  ) : temValor && classe ? (
+                                    <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
+                                  ) : null}
+                            </div>
+                          </div>
+                          <div className="ganho-card__value font-semibold text-green-600">
+                            <span style={{color: "grey", fontSize: 15}}>Total arrecadado:</span> {formatCurrency(g.total_mensal)}
+                          </div>
+                          {isAuthenticated && (
+                            <div className="ganho-card__actions">
+                              {operando ? (
+                                <div className="ganho-card__edit-row">
+                                  <CurrencyInput
+                                    value={valorOperacao}
+                                    onValueChange={setValorOperacao}
+                                    className="input-inline-edit"
+                                    style={{ width: 90, textAlign: "right" }}
+                                    disabled={salvando}
+                                    placeholder="R$ 0,00"
+                                  />
+                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                                    <Check className="w-4 h-4" />
+                                  </Button>
+                                  <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                                    <X className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="ganho-card__btn-row">
+                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                    +
+                                  </Button>
+                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                    -
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="ganhos-total-row">
+                    <span className="ganhos-total-label">Total</span>
+                    <span className="ganhos-total-value">{formatCurrency(totalGanhosMensais)}</span>
+                  </div>
+                </>
               );
             })()
           )}

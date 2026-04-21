@@ -24,11 +24,11 @@
   }
 
   .data-table__cell {
-    @apply py-3 pr-4 text-slate-600;
+    @apply py-3 px-4 text-slate-600 ;
   }
 
   .data-table__cell--right {
-    @apply py-2.5 text-right;
+    @apply py-2.5 px-4 text-right;
   }
 
   .data-table__avatar {
