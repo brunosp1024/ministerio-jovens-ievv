@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import String, Numeric, Integer, Date, DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date, datetime
@@ -29,7 +30,7 @@ class VendaSemanal(Base):
     evento_id: Mapped[int | None] = mapped_column(ForeignKey("eventos.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
-
+    ativo: Mapped[bool] = mapped_column(default=True)
     evento: Mapped["Evento"] = relationship("Evento")
     itens: Mapped[list["ItemVenda"]] = relationship(
         "ItemVenda", back_populates="venda", cascade="all, delete-orphan"
@@ -62,9 +63,8 @@ class GanhoJovem(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     jovem_id: Mapped[int] = mapped_column(ForeignKey("jovens.id"), nullable=False)
-    venda_id: Mapped[int] = mapped_column(ForeignKey("vendas_semanais.id"), nullable=False)
+    venda_id: Mapped[Optional[int]] = mapped_column(ForeignKey("vendas_semanais.id"), nullable=True)
     valor: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-
     jovem: Mapped["Jovem"] = relationship("Jovem", back_populates="ganhos")
-    venda: Mapped["VendaSemanal"] = relationship("VendaSemanal", back_populates="ganhos")
+    venda: Mapped[Optional["VendaSemanal"]] = relationship("VendaSemanal", back_populates="ganhos")

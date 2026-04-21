@@ -16,6 +16,20 @@ class FinanceiroService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def zerar_ganhos_jovens(self) -> int:
+        # Busca IDs das vendas com ganhos
+        result = await self.db.execute(select(GanhoJovem.venda_id).where(GanhoJovem.venda_id != None))
+        venda_ids = {row[0] for row in result.fetchall() if row[0] is not None}
+        # Zera ganhos
+        deleted = await self.db.execute(GanhoJovem.__table__.delete())
+        # Inativa apenas as vendas associadas
+        if venda_ids:
+            await self.db.execute(
+                VendaSemanal.__table__.update().where(VendaSemanal.id.in_(venda_ids)).values(ativo=False)
+            )
+        await self.db.commit()
+        return deleted.rowcount
+
     async def get_vendas(
         self,
         semana_inicio: Optional[date] = None,
@@ -24,7 +38,7 @@ class FinanceiroService:
         ano: Optional[int] = None,
         evento_id: Optional[int] = None,
     ) -> List[VendaSemanal]:
-        query = select(VendaSemanal).options(selectinload(VendaSemanal.itens))
+        query = select(VendaSemanal).options(selectinload(VendaSemanal.itens)).where(VendaSemanal.ativo == True)
         if semana_inicio:
             query = query.where(VendaSemanal.semana_inicio >= semana_inicio)
         if semana_fim:
@@ -49,6 +63,8 @@ class FinanceiroService:
 
     async def create_venda(self, data: VendaSemanalCreate) -> VendaSemanal:
         venda_data = data.model_dump(exclude={"itens"})
+        if "ativo" not in venda_data or venda_data["ativo"] is None:
+            venda_data["ativo"] = True
         venda = VendaSemanal(**venda_data)
         self.db.add(venda)
         await self.db.flush()
@@ -77,23 +93,34 @@ class FinanceiroService:
         return True
 
     async def distribuir_ganhos(self, data: DistribuirGanhosRequest) -> List[GanhoJovem]:
-        # Remove distribuições anteriores para essa venda
         existing = await self.db.execute(
             select(GanhoJovem).where(GanhoJovem.venda_id == data.venda_id)
         )
-        for ganho in existing.scalars().all():
-            await self.db.delete(ganho)
-        await self.db.flush()
+        ganhos_anteriores = {g.jovem_id: g for g in existing.scalars().all()}
 
         ganhos = []
         for dist in data.distribuicoes:
-            ganho = GanhoJovem(
-                jovem_id=dist.jovem_id,
-                venda_id=data.venda_id,
-                valor=dist.valor,
-            )
-            self.db.add(ganho)
-            ganhos.append(ganho)
+            jovem_id = dist.jovem_id
+            valor_novo = dist.valor
+            ganho_antigo = ganhos_anteriores.get(jovem_id)
+            if ganho_antigo:
+                ganho_antigo.valor = valor_novo
+                ganhos.append(ganho_antigo)
+            else:
+                # Novo ganho para este jovem nesta venda
+                ganho = GanhoJovem(
+                    jovem_id=jovem_id,
+                    venda_id=data.venda_id,
+                    valor=valor_novo,
+                )
+                self.db.add(ganho)
+                ganhos.append(ganho)
+
+        # Remove ganhos que não estão mais na distribuição
+        ids_distribuidos = {d.jovem_id for d in data.distribuicoes}
+        for jovem_id, ganho in ganhos_anteriores.items():
+            if jovem_id not in ids_distribuidos:
+                await self.db.delete(ganho)
 
         await self.db.commit()
         for g in ganhos:
@@ -103,30 +130,66 @@ class FinanceiroService:
     async def get_ganhos_mensais(
         self, mes: int, ano: int
     ) -> List[GanhoMensalJovem]:
-        query = (
-            select(
-                Jovem.id.label("jovem_id"),
-                Jovem.nome.label("jovem_nome"),
-                func.coalesce(func.sum(GanhoJovem.valor), 0).label("total_mensal"),
-            )
-            .join(GanhoJovem, GanhoJovem.jovem_id == Jovem.id, isouter=True)
-            .join(VendaSemanal, VendaSemanal.id == GanhoJovem.venda_id, isouter=True)
+        jovens = await self.db.execute(
+            select(Jovem.id, Jovem.nome)
             .where(Jovem.habilitado_financeiro == True, Jovem.ativo == True)
+            .order_by(Jovem.nome)
         )
-
-        if mes and ano:
-            query = query.where(
-                extract("month", VendaSemanal.semana_inicio) == mes,
-                extract("year", VendaSemanal.semana_inicio) == ano,
+        jovens_list = jovens.all()
+        ganhos_por_jovem = {}
+        datas_ultimos_ganhos = {}
+        for jovem_id, jovem_nome in jovens_list:
+            # Ganhos por venda
+            ganhos_venda = await self.db.execute(
+                select(func.coalesce(func.sum(GanhoJovem.valor), 0))
+                .join(VendaSemanal, VendaSemanal.id == GanhoJovem.venda_id)
+                .where(
+                    GanhoJovem.jovem_id == jovem_id
+                )
             )
+            total_vendas = ganhos_venda.scalar_one()
 
-        query = query.group_by(Jovem.id, Jovem.nome).order_by(Jovem.nome)
-        result = await self.db.execute(query)
-        rows = result.all()
-        return [
-            GanhoMensalJovem(jovem_id=r.jovem_id, jovem_nome=r.jovem_nome, total_mensal=r.total_mensal)
-            for r in rows
-        ]
+            # Ganhos manuais (sem venda)
+            ganhos_manuais = await self.db.execute(
+                select(func.coalesce(func.sum(GanhoJovem.valor), 0))
+                .where(GanhoJovem.jovem_id == jovem_id, GanhoJovem.venda_id == None)
+            )
+            total_manuais = ganhos_manuais.scalar_one()
+            total_geral = total_vendas + total_manuais
+
+            # Data do último ganho
+            data_ultimo = await self.db.execute(
+                select(func.coalesce(func.max(GanhoJovem.created_at), func.now()))
+                .where(GanhoJovem.jovem_id == jovem_id)
+            )
+            datas_ultimos_ganhos[jovem_id] = data_ultimo.scalar_one()
+
+            ganhos_por_jovem[jovem_id] = GanhoMensalJovem(
+                jovem_id=jovem_id,
+                jovem_nome=jovem_nome,
+                total_mensal=total_geral,
+            )
+        # Ordena do mais recente para o mais antigo
+        ordenados = sorted(
+            ganhos_por_jovem.values(),
+            key=lambda g: datas_ultimos_ganhos.get(g.jovem_id) or 0,
+            reverse=True
+        )
+        return ordenados
+
+    async def adicionar_ganho_manual(self, jovem_id: int, valor: Decimal):
+        result = await self.db.execute(
+            select(GanhoJovem).where(GanhoJovem.jovem_id == jovem_id, GanhoJovem.venda_id == None)
+        )
+        ganho = result.scalar_one_or_none()
+        if ganho:
+            ganho.valor += valor
+        else:
+            ganho = GanhoJovem(jovem_id=jovem_id, venda_id=None, valor=valor)
+            self.db.add(ganho)
+        await self.db.commit()
+        await self.db.refresh(ganho)
+        return ganho
 
     async def get_resumo(self) -> ResumoFinanceiro:
         result = await self.db.execute(

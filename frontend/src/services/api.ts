@@ -71,6 +71,9 @@ export const financeiroApi = {
     api.patch<ResumoCaixaResponse>("/financeiro/resumo-caixa", data).then((r) => r.data),
   ganhosPorVenda: (venda_id: number) =>
     api.get<GanhoVenda[]>(`/financeiro/ganhos/venda/${venda_id}`).then((r) => r.data),
+  zerarGanhos: () => api.post<{ message: string }>("/financeiro/zerar-ganhos").then((r) => r.data),
+  adicionarGanhoManual: (jovem_id: number, valor: string | number) =>
+    api.post<{ message: string; id: number }>("/financeiro/ganho-manual", { jovem_id, valor }).then((r) => r.data),
 };
 
 // ─── Notificações ─────────────────────────────────────────────────────────────

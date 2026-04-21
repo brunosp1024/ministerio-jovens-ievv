@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { financeiroApi, jovensApi, eventosApi } from "@/services/api";
 import {
   DollarSign, Plus, Filter, TrendingUp, TrendingDown,
-  ChevronDown, ChevronUp, Pencil, Trash2, Users2, Banknote
+  ChevronDown, ChevronUp, Pencil, Trash2, Users2, Banknote, Check, X
 } from "lucide-react";
 import { formatCurrency, formatDate, mesAtual, anoAtual } from "@/lib/utils";
 import Button from "@/components/ui/Button";
@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Select from "@/components/ui/Select";
 import CurrencyInput from "@/components/ui/CurrencyInput";
 export default function FinanceiroPage() {
+  const [confirmZerar, setConfirmZerar] = useState(false);
   const qc = useQueryClient();
   const { isAuthenticated, openLogin } = useAuth();
 
@@ -33,7 +34,6 @@ export default function FinanceiroPage() {
   const [distribuirVenda, setDistribuirVenda] = useState<VendaSemanal | null>(null);
   const [expandedVendas, setExpandedVendas] = useState<Set<number>>(new Set());
 
-  // Novo: estado para edição do resumo
   const [isEditResumo, setIsEditResumo] = useState(false);
   const [eventoAlvo, setEventoAlvo] = useState("");
   const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
@@ -59,6 +59,16 @@ export default function FinanceiroPage() {
   const { data: resumo } = useQuery({
     queryKey: ["resumo"],
     queryFn: () => financeiroApi.resumo(),
+  });
+
+  // Mutação para zerar ganhos
+  const zerarGanhosMut = useMutation({
+    mutationFn: financeiroApi.zerarGanhos,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
+      toast.success(data.message || "Receitas zeradas!");
+    },
+    onError: () => toast.error("Erro ao zerar receitas."),
   });
 
   const { data: resumoCaixa } = useQuery({
@@ -106,7 +116,29 @@ export default function FinanceiroPage() {
   const totalArrecadadoFiltrado = vendas.reduce((s, v) => s + parseFloat(v.total_arrecadado), 0);
   const lucroFiltrado = totalArrecadadoFiltrado - totalInvestidoFiltrado;
 
-  const totalGanhosMensais = ganhosMensais.reduce((s, g) => s + parseFloat(g.total_mensal), 0);
+  // Monta lista de todos habilitados, preenchendo 0 para quem não tem ganho
+  const ganhosPorJovemId: Record<number, typeof ganhosMensais[0]> = {};
+  ganhosMensais.forEach(g => { ganhosPorJovemId[g.jovem_id] = g; });
+  const todosGanhos = (jovensHab || []).map(jovem =>
+    ganhosPorJovemId[jovem.id] || {
+      jovem_id: jovem.id,
+      jovem_nome: jovem.nome,
+      total_mensal: "0",
+    }
+  );
+  const ganhosOrdenados = [...todosGanhos].sort((a, b) => parseFloat(b.total_mensal) - parseFloat(a.total_mensal));
+  const totalGanhosMensais = ganhosOrdenados.reduce((s, g) => s + parseFloat(g.total_mensal), 0);
+  const destaqueClasse = [
+    "top-1", // 1º lugar
+    "top-2", // 2º lugar
+    "top-3", // 3º lugar
+    "top-4", // 4º lugar
+    "top-5", // 5º lugar
+  ];
+  const [jovemOperando, setJovemOperando] = useState<number | null>(null);
+  const [valorOperacao, setValorOperacao] = useState<string>("");
+  const [tipoOperacao, setTipoOperacao] = useState<"add" | "sub" | null>(null);
+  const [salvando, setSalvando] = useState(false);
 
   function requireAuth(action: () => void) {
     if (!isAuthenticated) {
@@ -402,54 +434,151 @@ export default function FinanceiroPage() {
 
         {/* Receita individual de cada jovem */}
         <div className="card">
-          <div className="ganhos-header">
-            <Users2 className="ganhos-header__icon" />
-            <h2 className="section-title--base">
-              Caixa individual
-            </h2>
+          <div className="ganhos-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Users2 className="ganhos-header__icon" />
+              <h2 className="section-title--base">Caixa individual</h2>
+            </div>
+            {isAuthenticated && (
+              <Button
+                variant="outline"
+                color="red"
+                onClick={() => requireAuth(() => setConfirmZerar(true))}
+                disabled={zerarGanhosMut.isPending}
+                title="Zerar todas as receitas dos jovens"
+                style={{ marginLeft: "auto" }}
+              >
+                Zerar Receitas
+              </Button>
+            )}
           </div>
-          {ganhosMensais.length === 0 ? (
-            <p className="empty-state">Nenhum ganho registrado no período.</p>
+          {jovensHab.length === 0 ? (
+            <p className="empty-state">Nenhum jovem habilitado financeiramente.</p>
           ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="data-table">
-                  <thead>
-                    <tr className="data-table__head-row">
-                      <th className="data-table__head-cell">Jovem</th>
-                      <th className="data-table__head-cell--right">Total no Mês</th>
-                      <th className="data-table__head-cell--right">% do Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="data-table__body">
-                    {ganhosMensais.map((g) => {
-                      const pct = totalGanhosMensais > 0 ? (parseFloat(g.total_mensal) / totalGanhosMensais * 100).toFixed(1) : "0";
-                      return (
-                        <tr key={g.jovem_id} className="data-table__row">
-                          <td className="data-table__cell">
-                            <div className="flex items-center gap-2">
-                              <div className="data-table__avatar--sm data-table__avatar--purple">
-                                {g.jovem_nome.charAt(0)}
+            (() => {
+              // Função para iniciar operação de adição/subtração
+              const iniciarOperacao = (jovemId: number, tipo: "add" | "sub") => {
+                setJovemOperando(jovemId);
+                setTipoOperacao(tipo);
+                setValorOperacao("");
+              };
+              // Função para cancelar operação
+              const cancelarOperacao = () => {
+                setJovemOperando(null);
+                setTipoOperacao(null);
+                setValorOperacao("");
+              };
+              // Função para salvar operação: cria ganho manual
+              const salvarOperacao = async (jovemId: number) => {
+                setSalvando(true);
+                try {
+                  const valor = parseFloat(valorOperacao.replace(",", "."));
+                  if (isNaN(valor) || valor === 0) {
+                    toast.error("Informe um valor válido");
+                    setSalvando(false);
+                    return;
+                  }
+                  const valorFinal = tipoOperacao === "sub" ? -Math.abs(valor) : Math.abs(valor);
+                  await financeiroApi.adicionarGanhoManual(jovemId, valorFinal);
+                  qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
+                  toast.success("Operação registrada!");
+                  cancelarOperacao();
+                } catch (e) {
+                  toast.error("Erro ao registrar operação");
+                } finally {
+                  setSalvando(false);
+                }
+              };
+              return (
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr className="data-table__head-row">
+                        <th className="data-table__head-cell">Jovem</th>
+                        <th className="data-table__head-cell--right">Total no Mês</th>
+                        {isAuthenticated && <th className="data-table__head-cell--right">Ações</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="data-table__body">
+                      {ganhosOrdenados.map((g, idx) => {
+                        const temValor = parseFloat(g.total_mensal) > 0;
+                        const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
+                        const operando = jovemOperando === g.jovem_id;
+                        return (
+                          <tr key={g.jovem_id} className={`data-table__row${classe ? ` ${classe}` : ""}`}>
+                            <td className="data-table__cell">
+                              <div className="flex items-center gap-2">
+                                <div className="data-table__avatar--sm data-table__avatar--purple">
+                                  {g.jovem_nome.charAt(0)}
+                                </div>
+                                <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
+                                {temValor && classe && (
+                                  <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
+                                )}
                               </div>
-                              <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
-                            </div>
-                          </td>
-                          <td className="data-table__cell--right font-semibold text-green-600">{formatCurrency(g.total_mensal)}</td>
-                          <td className="data-table__cell--right text-slate-500">{pct}%</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr className="data-table__footer-row">
-                      <td className="data-table__footer-cell">Total</td>
-                      <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
-                      <td className="data-table__cell--right text-slate-500">100%</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </>
+                            </td>
+                            <td className="data-table__cell--right font-semibold text-green-600">
+                              {formatCurrency(g.total_mensal)}
+                            </td>
+                            {isAuthenticated && (
+                              <td className="data-table__cell--right">
+                                {operando ? (
+                                  <>
+                                    <input
+                                      type="number"
+                                      value={valorOperacao}
+                                      onChange={e => setValorOperacao(e.target.value)}
+                                      className="input-inline-edit"
+                                      style={{ width: 90, textAlign: "right" }}
+                                      disabled={salvando}
+                                      placeholder="R$ 0,00"
+                                    />
+                                    <button
+                                      className="icon-btn icon-btn--success"
+                                      onClick={() => salvarOperacao(g.jovem_id)}
+                                      disabled={salvando}
+                                      title="Salvar"
+                                      style={{ marginRight: 4 }}
+                                    >
+                                      <Check className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      className="icon-btn icon-btn--danger"
+                                      onClick={cancelarOperacao}
+                                      disabled={salvando}
+                                      title="Cancelar"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                      +
+                                    </Button>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                      -
+                                    </Button>
+                                  </>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="data-table__footer-row">
+                        <td className="data-table__footer-cell">Total</td>
+                        <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
+                        <td className="data-table__cell--right text-slate-500">100%</td>
+                        {isAuthenticated && <td />}
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              );
+            })()
           )}
         </div>
 
@@ -482,12 +611,25 @@ export default function FinanceiroPage() {
           />
         )}
 
+        {/* Confirmação para deletar venda */}
         <ConfirmDialog
           open={!!deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={() => deleteTarget && deleteMut.mutate(deleteTarget.id)}
           message={`Remover a venda da semana ${deleteTarget ? formatDate(deleteTarget.semana_inicio) : ""}?`}
           loading={deleteMut.isPending}
+        />
+
+        {/* Confirmação para zerar receitas dos jovens */}
+        <ConfirmDialog
+          open={confirmZerar}
+          onClose={() => setConfirmZerar(false)}
+          onConfirm={() => {
+            setConfirmZerar(false);
+            zerarGanhosMut.mutate();
+          }}
+          message="Tem certeza que deseja zerar todas as receitas dos jovens? Essa ação não pode ser desfeita."
+          loading={zerarGanhosMut.isPending}
         />
       </>
     </div>

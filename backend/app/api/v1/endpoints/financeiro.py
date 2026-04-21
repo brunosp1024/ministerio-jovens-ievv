@@ -7,7 +7,7 @@ from app.api.deps import get_current_username, get_db
 from app.services.financeiro_service import FinanceiroService
 from app.schemas.financeiro import (
     VendaSemanalCreate, VendaSemanalUpdate, VendaSemanalResponse,
-    DistribuirGanhosRequest, GanhoMensalJovem,
+    DistribuirGanhosRequest, GanhoMensalJovem, GanhoManualRequest,
     ResumoFinanceiro, ResumoCaixa as ResumoCaixaResponse,
 )
 from app.models.financeiro import ResumoCaixa
@@ -115,6 +115,17 @@ async def distribuir_ganhos(
     return {"message": f"{len(ganhos)} distribuição(ões) registrada(s)", "total": len(ganhos)}
 
 
+@router.post("/ganho-manual", status_code=201)
+async def adicionar_ganho_manual(
+    data: GanhoManualRequest,
+    db: AsyncSession = Depends(get_db),
+    _: str = Depends(get_current_username),
+):
+    service = FinanceiroService(db)
+    ganho = await service.adicionar_ganho_manual(data.jovem_id, data.valor)
+    return {"message": "Ganho manual registrado.", "id": ganho.id}
+
+
 @router.get("/ganhos/mensais", response_model=List[GanhoMensalJovem])
 async def ganhos_mensais(
     mes: int = Query(..., ge=1, le=12),
@@ -129,3 +140,13 @@ async def ganhos_mensais(
 async def ganhos_por_venda(venda_id: int, db: AsyncSession = Depends(get_db)):
     service = FinanceiroService(db)
     return await service.get_ganhos_por_venda(venda_id)
+
+
+@router.post("/zerar-ganhos")
+async def zerar_ganhos_jovens(
+    db: AsyncSession = Depends(get_db),
+    _: str = Depends(get_current_username),
+):
+    service = FinanceiroService(db)
+    total = await service.zerar_ganhos_jovens()
+    return {"message": f"{total} ganhos zerados."}
