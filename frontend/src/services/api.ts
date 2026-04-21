@@ -63,8 +63,8 @@ export const financeiroApi = {
   deletarVenda: (id: number) => api.delete(`/financeiro/vendas/${id}`),
   distribuirGanhos: (data: DistribuirGanhosRequest) =>
     api.post("/financeiro/distribuir-ganhos", data).then((r) => r.data),
-  ganhosMensais: (mes: number, ano: number) =>
-    api.get<GanhoMensalJovem[]>('/financeiro/ganhos/mensais', { params: { mes, ano } }).then((r) => r.data),
+  ganhosMensais: (filtros: any) =>
+    api.get<GanhoMensalJovem[]>('/financeiro/ganhos/mensais', { params: filtros }).then((r) => r.data),
   resumo: () => api.get<ResumoFinanceiro>("/financeiro/resumo").then((r) => r.data),
   resumoCaixa: () => api.get<ResumoCaixaResponse>("/financeiro/resumo-caixa").then((r) => r.data),
   atualizarResumoCaixa: (data: { total_caixa: string; total_dinheiro: string; total_pix: string }) =>

@@ -87,8 +87,8 @@ export default function FinanceiroPage() {
   });
 
   const { data: ganhosMensais = [] } = useQuery({
-    queryKey: ["ganhos-mensais", mes, ano],
-    queryFn: () => financeiroApi.ganhosMensais(mes, ano),
+    queryKey: ["ganhos-mensais", filtros],
+    queryFn: () => financeiroApi.ganhosMensais(filtros),
   });
 
   const deleteMut = useMutation({
@@ -352,7 +352,7 @@ export default function FinanceiroPage() {
 
         {/* Lista de vendas semanais */}
         <div className="card">
-          <h2 className="section-title--base">Arrecardações</h2>
+          <h2 className="section-title--base">Arrecadações</h2>
           {isLoading ? (
             <p className="loading-state">Carregando...</p>
           ) : vendas.length === 0 ? (
@@ -378,21 +378,40 @@ export default function FinanceiroPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center">
+
+                      <div className="flex items-center venda-header-actions-desktop">
                         {isAuthenticated && (
                           <>
+                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute px-1" title="Distribuir ganhos">
+                              <Users2 className="w-4 h-4" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit px-1">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete px-1" title="Remover venda">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                        <span className="chevron-desktop">{expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}</span>
+                      </div>
+
+                      {/* Mobile: Chevron */}
+                      <div className="venda-header-actions-mobile">
+                        <span className="chevron-mobile">{expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}</span>
+                        {isAuthenticated && (
+                          <div className="venda-header-actions-mobile-btns">
                             <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute" title="Distribuir ganhos">
                               <Users2 className="w-4 h-4" />
                             </button>
                             <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit">
                               <Pencil className="w-4 h-4" />
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete">
+                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete" title="Remover venda">
                               <Trash2 className="w-4 h-4" />
                             </button>
-                          </>
+                          </div>
                         )}
-                        {expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                       </div>
                     </div>
                     {expanded && venda.itens.length > 0 && (
@@ -518,15 +537,14 @@ export default function FinanceiroPage() {
                                       style={{ display: 'inline-flex', alignItems: 'center' }}
                                     >
                                       <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
-                                        {/* Faixa/fita abaixo do círculo */}
-                                        <g>
-                                          <rect x="8" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
-                                          <rect x="17" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                        <g style={{borderBottom: "1px solid black"}}>
+                                          <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                          <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
                                         </g>
                                         {/* Medalha */}
-                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
                                         <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
-                                        <text x="14" y="22" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#333">{idx + 1}</text>
+                                        <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
                                       </svg>
                                     </span>
                                   ) : temValor && classe ? (
@@ -545,9 +563,9 @@ export default function FinanceiroPage() {
                                         value={valorOperacao}
                                         onValueChange={setValorOperacao}
                                         className="input-inline-edit"
-                                        style={{ width: 90, textAlign: "right" }}
+                                        style={{ color: tipoOperacao === "add" ? "green" : "red"  }}
                                         disabled={salvando}
-                                        placeholder="R$ 0,00"
+                                        placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
                                       />
                                       <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
                                         <Check className="w-4 h-4" />
@@ -605,13 +623,13 @@ export default function FinanceiroPage() {
                                       <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
                                         {/* Faixa/fita abaixo do círculo */}
                                         <g>
-                                          <rect x="8" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
-                                          <rect x="17" y="26" width="3" height="8" rx="1.2" fill="#bdbdbd" />
+                                          <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                          <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
                                         </g>
                                         {/* Medalha */}
-                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
                                         <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
-                                        <text x="14" y="22" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#333">{idx + 1}</text>
+                                        <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
                                       </svg>
                                     </span>
                                   ) : temValor && classe ? (
@@ -656,10 +674,6 @@ export default function FinanceiroPage() {
                         </div>
                       );
                     })}
-                  </div>
-                  <div className="ganhos-total-row">
-                    <span className="ganhos-total-label">Total</span>
-                    <span className="ganhos-total-value">{formatCurrency(totalGanhosMensais)}</span>
                   </div>
                 </>
               );

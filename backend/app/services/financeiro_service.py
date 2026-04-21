@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, extract
 from sqlalchemy.orm import selectinload
@@ -128,53 +129,86 @@ class FinanceiroService:
         return ganhos
 
     async def get_ganhos_mensais(
-        self, mes: int, ano: int
+        self,
+        semana_inicio: Optional[date] = None,
+        semana_fim: Optional[date] = None,
+        evento_id: Optional[int] = None,
     ) -> List[GanhoMensalJovem]:
-        jovens = await self.db.execute(
+        # Busca todos os jovens habilitados
+        jovens_result = await self.db.execute(
             select(Jovem.id, Jovem.nome)
             .where(Jovem.habilitado_financeiro == True, Jovem.ativo == True)
             .order_by(Jovem.nome)
         )
-        jovens_list = jovens.all()
-        ganhos_por_jovem = {}
-        datas_ultimos_ganhos = {}
+        jovens_list = jovens_result.all()
+    
+        # Busca ganhos manuais (sem venda) apenas se NÃO houver filtro
+        ganhos_manuais = {}
+        if not (semana_inicio or semana_fim or evento_id):
+            ganhos_manuais_result = await self.db.execute(
+                select(
+                    GanhoJovem.jovem_id,
+                    func.coalesce(func.sum(GanhoJovem.valor), 0)
+                ).where(GanhoJovem.venda_id == None)
+                .group_by(GanhoJovem.jovem_id)
+            )
+            ganhos_manuais = dict(ganhos_manuais_result.all())
+    
+        # Busca vendas filtradas
+        vendas_query = select(VendaSemanal.id)
+        if semana_inicio:
+            vendas_query = vendas_query.where(VendaSemanal.semana_inicio >= semana_inicio)
+        if semana_fim:
+            vendas_query = vendas_query.where(VendaSemanal.semana_fim <= semana_fim)
+        if evento_id:
+            vendas_query = vendas_query.where(VendaSemanal.evento_id == evento_id)
+        vendas_query = vendas_query.where(VendaSemanal.ativo == True)
+        vendas_result = await self.db.execute(vendas_query)
+        venda_ids_filtradas = [row[0] for row in vendas_result.fetchall()]
+    
+        ganhos_venda = {}
+        if venda_ids_filtradas:
+            ganhos_venda_result = await self.db.execute(
+                select(
+                    GanhoJovem.jovem_id,
+                    func.coalesce(func.sum(GanhoJovem.valor), 0)
+                ).where(GanhoJovem.venda_id.in_(venda_ids_filtradas))
+                .group_by(GanhoJovem.jovem_id)
+            )
+            ganhos_venda = dict(ganhos_venda_result.all())
+    
+        # Busca data do último ganho para ordenação
+        datas_ultimos_ganhos_result = await self.db.execute(
+            select(
+                GanhoJovem.jovem_id,
+                func.coalesce(func.max(GanhoJovem.created_at), func.now())
+            ).group_by(GanhoJovem.jovem_id)
+        )
+        datas_ultimos_ganhos = dict(datas_ultimos_ganhos_result.all())
+    
+        ganhos_por_jovem = []
         for jovem_id, jovem_nome in jovens_list:
-            # Ganhos por venda
-            ganhos_venda = await self.db.execute(
-                select(func.coalesce(func.sum(GanhoJovem.valor), 0))
-                .join(VendaSemanal, VendaSemanal.id == GanhoJovem.venda_id)
-                .where(
-                    GanhoJovem.jovem_id == jovem_id
+            total_manuais = ganhos_manuais.get(jovem_id, 0)
+            total_vendas = ganhos_venda.get(jovem_id, 0)
+            total_geral = total_manuais + total_vendas
+            data_ultimo = datas_ultimos_ganhos.get(jovem_id)
+            if not isinstance(data_ultimo, datetime):
+                data_ultimo = datetime.min
+            elif data_ultimo.tzinfo is not None:
+                data_ultimo = data_ultimo.replace(tzinfo=None)
+            ganhos_por_jovem.append(
+                (
+                    data_ultimo,
+                    GanhoMensalJovem(
+                        jovem_id=jovem_id,
+                        jovem_nome=jovem_nome,
+                        total_mensal=total_geral,
+                    )
                 )
             )
-            total_vendas = ganhos_venda.scalar_one()
 
-            # Ganhos manuais (sem venda)
-            ganhos_manuais = await self.db.execute(
-                select(func.coalesce(func.sum(GanhoJovem.valor), 0))
-                .where(GanhoJovem.jovem_id == jovem_id, GanhoJovem.venda_id == None)
-            )
-            total_manuais = ganhos_manuais.scalar_one()
-            total_geral = total_vendas + total_manuais
-
-            # Data do último ganho
-            data_ultimo = await self.db.execute(
-                select(func.coalesce(func.max(GanhoJovem.created_at), func.now()))
-                .where(GanhoJovem.jovem_id == jovem_id)
-            )
-            datas_ultimos_ganhos[jovem_id] = data_ultimo.scalar_one()
-
-            ganhos_por_jovem[jovem_id] = GanhoMensalJovem(
-                jovem_id=jovem_id,
-                jovem_nome=jovem_nome,
-                total_mensal=total_geral,
-            )
         # Ordena do mais recente para o mais antigo
-        ordenados = sorted(
-            ganhos_por_jovem.values(),
-            key=lambda g: datas_ultimos_ganhos.get(g.jovem_id) or 0,
-            reverse=True
-        )
+        ordenados = [g for _, g in sorted(ganhos_por_jovem, key=lambda x: x[0], reverse=True)]
         return ordenados
 
     async def adicionar_ganho_manual(self, jovem_id: int, valor: Decimal):

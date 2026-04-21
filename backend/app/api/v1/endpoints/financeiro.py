@@ -128,12 +128,17 @@ async def adicionar_ganho_manual(
 
 @router.get("/ganhos/mensais", response_model=List[GanhoMensalJovem])
 async def ganhos_mensais(
-    mes: int = Query(..., ge=1, le=12),
-    ano: int = Query(..., ge=2000),
+    semana_inicio: Optional[date] = Query(None),
+    semana_fim: Optional[date] = Query(None),
+    evento_id: Optional[int] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     service = FinanceiroService(db)
-    return await service.get_ganhos_mensais(mes=mes, ano=ano)
+    return await service.get_ganhos_mensais(
+        semana_inicio=semana_inicio,
+        semana_fim=semana_fim,
+        evento_id=evento_id
+    )
 
 
 @router.get("/ganhos/venda/{venda_id}")
