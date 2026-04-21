@@ -48,7 +48,7 @@
   }
 
   .action-btn {
-    @apply p-1.5 rounded-lg text-slate-400 transition-colors;
+    @apply p-1.5 pr-0 rounded-lg text-slate-400 transition-colors;
   }
 
   .action-btn--edit {
