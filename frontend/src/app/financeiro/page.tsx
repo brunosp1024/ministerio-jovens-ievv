@@ -523,34 +523,22 @@ export default function FinanceiroPage() {
                             {isAuthenticated && (
                               <td className="data-table__cell--right">
                                 {operando ? (
-                                  <>
-                                    <input
-                                      type="number"
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
+                                    <CurrencyInput
                                       value={valorOperacao}
-                                      onChange={e => setValorOperacao(e.target.value)}
+                                      onValueChange={setValorOperacao}
                                       className="input-inline-edit"
                                       style={{ width: 90, textAlign: "right" }}
                                       disabled={salvando}
                                       placeholder="R$ 0,00"
                                     />
-                                    <button
-                                      className="icon-btn icon-btn--success"
-                                      onClick={() => salvarOperacao(g.jovem_id)}
-                                      disabled={salvando}
-                                      title="Salvar"
-                                      style={{ marginRight: 4 }}
-                                    >
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
                                       <Check className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                      className="icon-btn icon-btn--danger"
-                                      onClick={cancelarOperacao}
-                                      disabled={salvando}
-                                      title="Cancelar"
-                                    >
+                                    </Button>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
                                       <X className="w-4 h-4" />
-                                    </button>
-                                  </>
+                                    </Button>
+                                  </div>
                                 ) : (
                                   <>
                                     <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
@@ -571,7 +559,6 @@ export default function FinanceiroPage() {
                       <tr className="data-table__footer-row">
                         <td className="data-table__footer-cell">Total</td>
                         <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
-                        <td className="data-table__cell--right text-slate-500">100%</td>
                         {isAuthenticated && <td />}
                       </tr>
                     </tfoot>

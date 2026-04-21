@@ -252,8 +252,6 @@ class FinanceiroService:
             self.db.add(resumo_obj)
             await self.db.flush()
         # Atualiza os campos
-        resumo_obj.total_dinheiro += venda.valor_dinheiro
-        resumo_obj.total_pix += venda.valor_pix
-        resumo_obj.total_caixa = resumo_obj.total_dinheiro + resumo_obj.total_pix
+        resumo_obj.total_caixa += venda.lucro_liquido
         await self.db.commit()
         return resumo_obj

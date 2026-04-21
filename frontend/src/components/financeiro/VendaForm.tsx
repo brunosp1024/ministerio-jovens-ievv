@@ -1,6 +1,6 @@
 "use client";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { financeiroApi } from "@/services/api";
 import { VendaSemanal, VendaSemanalCreate, Evento } from "@/types";
 import { useQuery } from "@tanstack/react-query";
@@ -47,9 +47,14 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
 
   const { fields, append, remove } = useFieldArray({ control, name: "itens" });
 
+  const qc = useQueryClient();
   const createMut = useMutation({
     mutationFn: financeiroApi.criarVenda,
-    onSuccess: () => { toast.success("Venda registrada!"); onSuccess(); },
+    onSuccess: () => {
+      toast.success("Venda registrada!");
+      qc.invalidateQueries({ queryKey: ["resumo-caixa"] });
+      onSuccess();
+    },
     onError: () => toast.error("Erro ao registrar venda."),
   });
   const updateMut = useMutation({
