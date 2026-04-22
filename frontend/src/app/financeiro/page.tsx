@@ -56,11 +56,6 @@ export default function FinanceiroPage() {
     queryFn: () => financeiroApi.listarVendas(filtros),
   });
 
-  const { data: resumo } = useQuery({
-    queryKey: ["resumo"],
-    queryFn: () => financeiroApi.resumo(),
-  });
-
   // Mutação para zerar ganhos
   const zerarGanhosMut = useMutation({
     mutationFn: financeiroApi.zerarGanhos,
@@ -95,7 +90,6 @@ export default function FinanceiroPage() {
     mutationFn: financeiroApi.deletarVenda,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendas"] });
-      qc.invalidateQueries({ queryKey: ["resumo"] });
       qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
       toast.success("Venda removida!");
       setDeleteTarget(null);
@@ -693,7 +687,6 @@ export default function FinanceiroPage() {
             editing={editingVenda}
             onSuccess={() => {
               qc.invalidateQueries({ queryKey: ["vendas"] });
-              qc.invalidateQueries({ queryKey: ["resumo"] });
               qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
               setModalVenda(false);
               setEditingVenda(null);

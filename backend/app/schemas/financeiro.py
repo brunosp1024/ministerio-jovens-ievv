@@ -93,13 +93,6 @@ class GanhoManualRequest(BaseModel):
     valor: Decimal
 
 
-class ResumoFinanceiro(BaseModel):
-    total_dinheiro: Decimal
-    total_pix: Decimal
-    total_caixa: Decimal
-    total_investido: Decimal
-    total_arrecadado: Decimal
-    lucro_liquido: Decimal
 
 
 class ResumoCaixa(BaseModel):

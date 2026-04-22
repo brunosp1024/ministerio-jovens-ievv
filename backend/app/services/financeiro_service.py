@@ -9,7 +9,7 @@ from app.models.financeiro import VendaSemanal, ItemVenda, GanhoJovem, ResumoCai
 from app.models.jovem import Jovem
 from app.schemas.financeiro import (
     VendaSemanalCreate, VendaSemanalUpdate, DistribuirGanhosRequest,
-    GanhoMensalJovem, ResumoFinanceiro, ResumoCaixa as ResumoCaixaResponse
+    GanhoMensalJovem, ResumoCaixa as ResumoCaixaResponse
 )
 
 
@@ -231,30 +231,6 @@ class FinanceiroService:
         await self.db.commit()
         await self.db.refresh(ganho)
         return ganho
-
-    async def get_resumo(self) -> ResumoFinanceiro:
-        result = await self.db.execute(
-            select(
-                func.coalesce(func.sum(VendaSemanal.valor_dinheiro), 0).label("total_dinheiro"),
-                func.coalesce(func.sum(VendaSemanal.valor_pix), 0).label("total_pix"),
-                func.coalesce(func.sum(VendaSemanal.total_investido), 0).label("total_investido"),
-                func.coalesce(func.sum(VendaSemanal.total_arrecadado), 0).label("total_arrecadado"),
-            )
-        )
-        row = result.one()
-        total_dinheiro = Decimal(str(row.total_dinheiro))
-        total_pix = Decimal(str(row.total_pix))
-        total_investido = Decimal(str(row.total_investido))
-        total_arrecadado = Decimal(str(row.total_arrecadado))
-
-        return ResumoFinanceiro(
-            total_dinheiro=total_dinheiro,
-            total_pix=total_pix,
-            total_caixa=total_dinheiro + total_pix,
-            total_investido=total_investido,
-            total_arrecadado=total_arrecadado,
-            lucro_liquido=total_arrecadado - total_investido,
-        )
 
     async def get_ganhos_por_venda(self, venda_id: int) -> List[GanhoJovem]:
         result = await self.db.execute(

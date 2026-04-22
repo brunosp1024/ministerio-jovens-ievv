@@ -8,17 +8,11 @@ from app.services.financeiro_service import FinanceiroService
 from app.schemas.financeiro import (
     VendaSemanalCreate, VendaSemanalUpdate, VendaSemanalResponse,
     DistribuirGanhosRequest, GanhoMensalJovem, GanhoManualRequest,
-    ResumoFinanceiro, ResumoCaixa as ResumoCaixaResponse,
+    ResumoCaixa as ResumoCaixaResponse,
 )
 from app.models.financeiro import ResumoCaixa
 
 router = APIRouter(prefix="/financeiro", tags=["financeiro"])
-
-
-@router.get("/resumo", response_model=ResumoFinanceiro)
-async def resumo_financeiro(db: AsyncSession = Depends(get_db)):
-    service = FinanceiroService(db)
-    return await service.get_resumo()
 
 
 @router.get("/resumo-caixa", response_model=ResumoCaixaResponse)
