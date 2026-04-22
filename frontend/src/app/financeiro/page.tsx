@@ -648,9 +648,9 @@ export default function FinanceiroPage() {
                                     value={valorOperacao}
                                     onValueChange={setValorOperacao}
                                     className="input-inline-edit"
-                                    style={{ width: 90, textAlign: "right" }}
+                                    style={{ width: 90, textAlign: "right", color: tipoOperacao === "add" ? "green" : "red" }}
                                     disabled={salvando}
-                                    placeholder="R$ 0,00"
+                                    placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
                                   />
                                   <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
                                     <Check className="w-4 h-4" />
