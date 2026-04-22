@@ -49,6 +49,7 @@ class VendaSemanalUpdate(BaseModel):
     observacoes: Optional[str] = None
     evento_id: Optional[int] = None
     ativo: Optional[bool] = None
+    itens: Optional[List[ItemVendaCreate]] = None
 
 
 class VendaSemanalResponse(VendaSemanalBase):

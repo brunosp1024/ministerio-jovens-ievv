@@ -80,8 +80,15 @@ class FinanceiroService:
         venda = await self.get_venda_by_id(venda_id)
         if not venda:
             return None
-        for field, value in data.model_dump(exclude_unset=True).items():
+        update_data = data.model_dump(exclude_unset=True)
+        itens_data = update_data.pop("itens", None)
+        for field, value in update_data.items():
             setattr(venda, field, value)
+        if itens_data is not None:
+            await self.db.execute(
+                ItemVenda.__table__.delete().where(ItemVenda.venda_id == venda.id)
+            )
+            self.db.add_all([ItemVenda(**item_data, venda_id=venda.id) for item_data in itens_data])
         await self.db.commit()
         return await self.get_venda_by_id(venda_id)
 
