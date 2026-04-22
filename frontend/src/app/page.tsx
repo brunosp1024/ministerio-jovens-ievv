@@ -8,7 +8,7 @@ import { formatCurrency, formatDateTime } from "@/lib/utils";
 export default function DashboardPage() {
   const { data: jovens = [] } = useQuery({ queryKey: ["jovens"], queryFn: () => jovensApi.listar() });
   const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: () => eventosApi.listar() });
-  const { data: resumo } = useQuery({ queryKey: ["resumo-geral"], queryFn: () => financeiroApi.resumo() });
+  const { data: resumo } = useQuery({ queryKey: ["resumo-geral"], queryFn: () => financeiroApi.resumoCaixa() });
 
   const stats = [
     { label: "Jovens cadastrados", value: jovens.length, icon: Users, color: "bg-blue-500", href: "/jovens" },
@@ -78,9 +78,8 @@ export default function DashboardPage() {
             <ul className="dashboard-list">
               {[
                 ["Total em caixa", resumo.total_caixa],
-                ["Total investido", resumo.total_investido],
-                ["Total arrecadado", resumo.total_arrecadado],
-                ["Lucro líquido", resumo.lucro_liquido],
+                ["Total em dinheiro", resumo.total_dinheiro],
+                ["Total em pix", resumo.total_pix]
               ].map(([label, value]) => (
                 <li key={label} className="dashboard-list-item--between">
                   <span className="dashboard-list-item__label">{label}</span>
