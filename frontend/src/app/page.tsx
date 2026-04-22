@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { jovensApi, eventosApi, financeiroApi } from "@/services/api";
 import { Users, Calendar, DollarSign, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { data: jovens = [] } = useQuery({ queryKey: ["jovens"], queryFn: () => jovensApi.listar() });
@@ -61,7 +61,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <p className="dashboard-list-item__title">{e.nome}</p>
-                    <p className="dashboard-list-item__subtitle">{formatDateTime(e.data_evento)}</p>
+                    <p className="dashboard-list-item__subtitle">{formatDate(e.data_evento)}</p>
                     {e.local && <p className="dashboard-list-item__detail">{e.local}</p>}
                   </div>
                 </li>
