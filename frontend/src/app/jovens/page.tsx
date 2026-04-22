@@ -78,7 +78,7 @@ export default function JovensPage() {
     const headers = [
       "ID",
       "Nome",
-      "E-mail",
+      "Perfil",
       "Telefone",
       "Data de Nascimento",
       "Idade",
@@ -90,6 +90,7 @@ export default function JovensPage() {
     const rows = jovens.map((j) => [
       j.id,
       j.nome,
+      j.perfil ?? "",
       j.telefone ?? "",
       formatDate(j.data_nascimento),
       j.endereco ?? "",

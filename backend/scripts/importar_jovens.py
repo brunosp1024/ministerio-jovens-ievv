@@ -27,6 +27,7 @@ async def importar_jovens(file_path):
             reader = csv.DictReader(csvfile)
             for row in reader:
                 nome = row.get("Nome")
+                perfil = row.get("Perfil")
                 telefone = row.get("Telefone")
                 data_nascimento = parse_date(row.get("Data de Nascimento"))
                 foto_url = row.get("Foto URL")
@@ -49,6 +50,7 @@ async def importar_jovens(file_path):
 
                 jovem = JovemCreate(
                     nome=nome,
+                    perfil=perfil,
                     telefone=telefone,
                     data_nascimento=data_nascimento,
                     endereco=endereco,
