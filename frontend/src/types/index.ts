@@ -68,14 +68,13 @@ export interface ItemVendaCreate {
   total: string;
 }
 
+
 export interface VendaSemanal {
   id: number;
   semana_inicio: string;
   semana_fim: string;
   total_investido: string;
   total_arrecadado: string;
-  valor_dinheiro: string;
-  valor_pix: string;
   lucro_liquido: string;
   observacoes?: string;
   evento_id?: number;
@@ -90,8 +89,6 @@ export interface VendaSemanalCreate {
   semana_fim: string;
   total_investido: string;
   total_arrecadado: string;
-  valor_dinheiro?: string;
-  valor_pix?: string;
   observacoes?: string;
   evento_id?: number;
   itens?: ItemVendaCreate[];

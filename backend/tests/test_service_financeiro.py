@@ -14,8 +14,6 @@ async def test_financeiro_service_venda_crud(db_session: AsyncSession):
         semana_fim=date(2025, 6, 8),
         total_investido="50.00",
         total_arrecadado="120.00",
-        valor_dinheiro="70.00",
-        valor_pix="50.00",
         itens=[ItemVendaCreate(produto="Hamburguer", quantidade=20, preco_unitario="6.00", total="120.00")],
     )
     venda = await service.create_venda(venda_data)
@@ -30,8 +28,6 @@ async def test_financeiro_service_venda_crud(db_session: AsyncSession):
     upd = VendaSemanalUpdate(
         total_investido="60.00",
         total_arrecadado="130.00",
-        valor_dinheiro="80.00",
-        valor_pix="50.00",
         observacoes="Teste update"
     )
     updated = await service.update_venda(venda.id, upd)

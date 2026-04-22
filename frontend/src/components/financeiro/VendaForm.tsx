@@ -29,8 +29,6 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
           semana_fim: editing.semana_fim,
           total_investido: editing.total_investido,
           total_arrecadado: editing.total_arrecadado,
-          valor_dinheiro: editing.valor_dinheiro,
-          valor_pix: editing.valor_pix,
           observacoes: editing.observacoes,
           evento_id: editing.evento_id,
           itens: editing.itens.map((i) => ({
@@ -98,7 +96,7 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
   }
 
   function renderCurrencyField(
-    name: "total_investido" | "total_arrecadado" | "valor_dinheiro" | "valor_pix",
+    name: "total_investido" | "total_arrecadado",
     label: string,
     required = false,
   ) {
@@ -162,10 +160,6 @@ export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
         {renderCurrencyField("total_arrecadado", "Total arrecadado (R$) *", true)}
       </div>
 
-      <div className="form-grid-2">
-        {renderCurrencyField("valor_dinheiro", "Valor dinheiro")}
-        {renderCurrencyField("valor_pix", "Valor pix")}
-      </div>
 
       {/* Itens vendidos */}
       <div>

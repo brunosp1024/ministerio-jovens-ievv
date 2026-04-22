@@ -423,7 +423,7 @@ export default function FinanceiroPage() {
                               <th className="text-left pb-1">Produto</th>
                               <th className="text-right pb-1">Qtd</th>
                               <th className="text-right pb-1">Unit.</th>
-                              <th className="text-right pb-1">Total</th>
+                              <th className="text-right pb-1">Subtotal esperado</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -438,8 +438,14 @@ export default function FinanceiroPage() {
                           </tbody>
                         </table>
                         <div className="venda-item__details-footer">
-                          <span>Dinheiro: {formatCurrency(venda.valor_dinheiro)}</span>
-                          <span>Pix: {formatCurrency(venda.valor_pix)}</span>
+                          <span className="font-medium text-right block w-full">Total: {
+                            formatCurrency(
+                              venda.itens.reduce(
+                                (s, item) =>
+                                  s + item.quantidade * parseFloat(item.preco_unitario), 0
+                              )
+                            )
+                          }</span>
                           {venda.observacoes && <span className="italic">{venda.observacoes}</span>}
                         </div>
                       </div>
