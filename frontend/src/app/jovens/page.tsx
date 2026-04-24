@@ -306,7 +306,7 @@ export default function JovensPage() {
                           <span className="jovem__age">({idade} anos)</span>
                         </td>
                         <td className="data-table__cell">
-                          {j.telefone && <p className="jovem__telefone">{j.telefone}</p>}
+                          {j.telefone && <p className="jovem__telefone">{formatPhone(j.telefone)}</p>}
                         </td>
                         <td className="py-3 pr-4" style={{ whiteSpace: "nowrap" }}>
                           <Badge bgColor={faixa.color} textColor="#fff">{faixa.label}</Badge>
