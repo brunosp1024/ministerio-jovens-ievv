@@ -61,6 +61,11 @@ class JovemService:
         jovem = await self.get_by_id(jovem_id)
         if not jovem:
             return False
+
+        # Deleta imagem do Cloudinary
+        if jovem.telefone:
+            CloudinaryService.delete_image(jovem.telefone)
+
         await self.db.delete(jovem)
         await self.db.commit()
         return True

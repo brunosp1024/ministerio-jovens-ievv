@@ -21,6 +21,7 @@ async def test_criar_jovem(client: AsyncClient):
     response = await client.post("/api/v1/jovens/", json=JOVEM_PAYLOAD)
     assert response.status_code == 201
     data = response.json()
+    breakpoint()
     assert data["nome"] == JOVEM_PAYLOAD["nome"]
     assert "id" in data
     # Verifica se foto_url foi preenchido (mock ou real)
@@ -74,8 +75,14 @@ async def test_atualizar_jovem_nao_encontrado(client: AsyncClient):
 async def test_deletar_jovem(client: AsyncClient):
     create = await client.post("/api/v1/jovens/", json=JOVEM_PAYLOAD)
     jovem_id = create.json()["id"]
-    response = await client.delete(f"/api/v1/jovens/{jovem_id}")
-    assert response.status_code == 204
+    telefone = JOVEM_PAYLOAD["telefone"]
+
+    with patch("app.services.cloudinary_service.CloudinaryService.delete_image") as mock_delete_image:
+        mock_delete_image.return_value = True
+        response = await client.delete(f"/api/v1/jovens/{jovem_id}")
+        assert response.status_code == 204
+        # Garante que a função de deletar imagem foi chamada com o telefone correto
+        mock_delete_image.assert_called_with(telefone)
 
 
 async def test_deletar_jovem_nao_encontrado(client: AsyncClient):

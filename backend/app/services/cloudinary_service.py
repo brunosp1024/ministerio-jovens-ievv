@@ -39,3 +39,17 @@ class CloudinaryService:
         except Exception as e:
             print(f"Erro ao enviar imagem para o Cloudinary: {e}")
             return None
+
+    @staticmethod
+    def delete_image(phone: str) -> bool:
+        """
+        Deleta uma imagem do Cloudinary pelo public_id.
+        Retorna True se deletou, False caso contrário.
+        """
+        try:
+            public_id = f"jovens-ievv/{phone}"
+            result = cloudinary.uploader.destroy(public_id, resource_type="image")
+            return result.get("result") == "ok"
+        except Exception as e:
+            print(f"Erro ao deletar imagem do Cloudinary: {e}")
+            return False
