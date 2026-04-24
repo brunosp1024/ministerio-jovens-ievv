@@ -21,7 +21,6 @@ async def test_criar_jovem(client: AsyncClient):
     response = await client.post("/api/v1/jovens/", json=JOVEM_PAYLOAD)
     assert response.status_code == 201
     data = response.json()
-    breakpoint()
     assert data["nome"] == JOVEM_PAYLOAD["nome"]
     assert "id" in data
     # Verifica se foto_url foi preenchido (mock ou real)
