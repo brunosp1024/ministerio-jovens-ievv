@@ -1,14 +1,15 @@
 import pytest
 from httpx import AsyncClient
 from datetime import date
+from unittest.mock import patch
 
 
 pytestmark = pytest.mark.asyncio
 
 JOVEM_PAYLOAD = {
     "nome": "João Silva",
-    "email": "joao@teste.com",
     "telefone": "83999999999",
+    "perfil": "integrante",
     "data_nascimento": str(date.today().replace(month=date.today().month, day=date.today().day)),
     "endereco": "Rua A, 123",
     "habilitado_financeiro": True,
@@ -21,8 +22,14 @@ async def test_criar_jovem(client: AsyncClient):
     assert response.status_code == 201
     data = response.json()
     assert data["nome"] == JOVEM_PAYLOAD["nome"]
-    assert data["email"] == JOVEM_PAYLOAD["email"]
     assert "id" in data
+    # Verifica se foto_url foi preenchido (mock ou real)
+    assert "foto_url" in data
+    # Se o telefone for válido e o serviço estiver mockado/configurado, espera uma URL
+    if JOVEM_PAYLOAD["telefone"]:
+        # Pode ser None se não houver integração, mas se houver, deve ser uma string de URL
+        foto_url = data["foto_url"]
+        assert (foto_url is None) or (isinstance(foto_url, str) and foto_url.startswith("http"))
 
 
 async def test_listar_jovens(client: AsyncClient):

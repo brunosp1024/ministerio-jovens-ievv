@@ -47,12 +47,12 @@ async def public_client():
 
     # Cria usuário admin se não existir
     async with AsyncTestSessionLocal() as session:
-        result = await session.execute(sqlalchemy.select(Jovem).where(Jovem.email == "admin@admin.com"))
+        result = await session.execute(sqlalchemy.select(Jovem).where(Jovem.nome == "admin"))
         admin = result.scalar_one_or_none()
         if not admin:
             admin = Jovem(
                 nome="admin",
-                email="admin@admin.com",
+                perfil="lideranca",
                 telefone="0000000000",
                 data_nascimento=date(1990, 1, 1),
                 habilitado_financeiro=True,

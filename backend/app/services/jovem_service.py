@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from typing import Optional, List
 from app.models.jovem import Jovem
 from app.schemas.jovem import JovemCreate, JovemUpdate
+from app.services.whatsapp_service import WhatsAppService
+from app.services.cloudinary_service import CloudinaryService
 
 
 class JovemService:
@@ -29,6 +31,16 @@ class JovemService:
 
     async def create(self, data: JovemCreate) -> Jovem:
         jovem = Jovem(**data.model_dump())
+        img_url = None
+        telefone = f"55{jovem.telefone}"
+
+        if telefone:
+            whatsapp_service = WhatsAppService()
+            profile_image = await whatsapp_service.get_profile_picture_url(telefone)
+            # Salva no cloudnary
+            img_url = CloudinaryService.upload_image(profile_image, public_id=f"jovens-ievv/{jovem.telefone}")
+
+        jovem.foto_url = img_url
         self.db.add(jovem)
         await self.db.commit()
         await self.db.refresh(jovem)
