@@ -182,3 +182,67 @@ async def test_task_birthday(db_session: AsyncSession, monkeypatch: pytest.Monke
 
     assert isinstance(result, list)
     envio_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("profile_url,expected", [
+    ("http://img.com/pic.jpg", "http://img.com/pic.jpg"),
+    (None, None),
+    ("not-a-url", None),
+])
+async def test_get_profile_picture_url(monkeypatch, profile_url, expected):
+    class FakeResponse:
+        status_code = 200
+        def json(self):
+            return {"profilePictureUrl": profile_url}
+
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            pass
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+        async def post(self, url, headers, json):
+            return FakeResponse()
+
+    monkeypatch.setattr(settings, "WHATSAPP_ENABLED", True)
+    monkeypatch.setattr(settings, "EVOLUTION_API_URL", "http://localhost:8080")
+    monkeypatch.setattr(settings, "AUTHENTICATION_API_KEY", "local-api-key")
+    monkeypatch.setattr(settings, "EVOLUTION_INSTANCE_NAME", "verbo-da-vida")
+    monkeypatch.setattr("app.services.whatsapp_service.httpx.AsyncClient", FakeAsyncClient)
+
+    service = WhatsAppService()
+    result = await service.get_profile_picture_url("5583999998888")
+    assert result == expected
+
+
+@pytest.mark.asyncio
+async def test_get_profile_picture_url_not_configured(monkeypatch):
+    monkeypatch.setattr(settings, "WHATSAPP_ENABLED", False)
+    service = WhatsAppService()
+    result = await service.get_profile_picture_url("5583999998888")
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_get_profile_picture_url_exception(monkeypatch):
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            pass
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+        async def post(self, url, headers, json):
+            raise Exception("erro de rede")
+
+    monkeypatch.setattr(settings, "WHATSAPP_ENABLED", True)
+    monkeypatch.setattr(settings, "EVOLUTION_API_URL", "http://localhost:8080")
+    monkeypatch.setattr(settings, "AUTHENTICATION_API_KEY", "local-api-key")
+    monkeypatch.setattr(settings, "EVOLUTION_INSTANCE_NAME", "verbo-da-vida")
+    monkeypatch.setattr("app.services.whatsapp_service.httpx.AsyncClient", FakeAsyncClient)
+
+    service = WhatsAppService()
+    result = await service.get_profile_picture_url("5583999998888")
+    assert result is None

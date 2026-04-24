@@ -16,7 +16,7 @@ class WhatsAppService:
         self.api_url = settings.EVOLUTION_API_URL.rstrip("/")
         self.api_key = settings.AUTHENTICATION_API_KEY
         self.instance_name = settings.EVOLUTION_INSTANCE_NAME
-        self.recipient_phone = self._normalizar_telefone(settings.WHATSAPP_RECIPIENT_PHONE)
+        self.recipient_phone = settings.WHATSAPP_RECIPIENT_PHONE
         self.timeout_seconds = settings.WHATSAPP_TIMEOUT_SECONDS
 
     @property
@@ -71,5 +71,24 @@ class WhatsAppService:
             linhas.append(f"- {notificacao.titulo}: {notificacao.mensagem}")
         return "\n".join(linhas)
 
-    def _normalizar_telefone(self, telefone: str) -> str:
-        return re.sub(r"\D", "", telefone or "")
+    async def get_profile_picture_url(self, phone: str) -> str | None:
+        """Busca a URL da foto de perfil do WhatsApp via Evolution API."""
+        if not self.enabled or not phone:
+            return None
+    
+        url = f"{self.api_url}/chat/fetchProfilePictureUrl/{self.instance_name}"
+        headers = {"Content-Type": "application/json", "apikey": self.api_key}
+        payload = {"number": f"+{phone}" if not phone.startswith("+") else phone}
+
+        try:
+            resp = httpx.post(url, headers=headers, json=payload)
+            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
+                resp = await client.post(url, headers=headers, json=payload)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    profile_url = data.get("profilePictureUrl")
+                    if profile_url and profile_url.startswith("http"):
+                        return profile_url
+        except Exception as e:
+            logger.warning(f"Erro ao buscar foto de perfil do WhatsApp: {e}")
+        return None
