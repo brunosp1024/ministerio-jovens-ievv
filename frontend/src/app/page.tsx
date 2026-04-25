@@ -14,7 +14,6 @@ export default function DashboardPage() {
     { label: "Jovens cadastrados", value: jovens.length, icon: Users, color: "bg-blue-500", href: "/jovens" },
     { label: "Eventos", value: eventos.length, icon: Calendar, color: "bg-purple-500", href: "/eventos" },
     { label: "Em caixa", value: resumo ? formatCurrency(resumo.total_caixa) : "R$ 0,00", icon: DollarSign, color: "bg-green-500", href: "/financeiro" },
-    { label: "Jovens ativos", value: jovens.filter((j) => j.ativo).length, icon: TrendingUp, color: "bg-amber-500", href: "/jovens" },
   ];
 
   const proximosEventos = [...eventos]
