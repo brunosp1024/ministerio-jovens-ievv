@@ -508,7 +508,7 @@ export default function FinanceiroPage() {
                         <tr className="data-table__head-row">
                           <th className="data-table__head-cell">Jovem</th>
                           <th className="data-table__head-cell--right">Total arrecadado</th>
-                          {isAuthenticated && <th className="data-table__head-cell--right">Ações</th>}
+                          {isAuthenticated && <th className="data-table__head-cell--right pr-5">Ações</th>}
                         </tr>
                       </thead>
                       <tbody className="data-table__body">
