@@ -358,8 +358,8 @@ export default function FinanceiroPage() {
                 return (
                   <div key={venda.id} className="venda-item">
                     <div className="venda-item__header" onClick={() => toggleExpand(venda.id)}>
-                      <div className="flex items-center gap-3">
-                        <div>
+                      <div className="flex w-full justify-between items-start gap-3">
+                        <div style={{ flex: 1 }}>
                           <p className="venda-item__title">
                             {formatDate(venda.semana_inicio)} — {formatDate(venda.semana_fim)}
                           </p>
@@ -371,41 +371,42 @@ export default function FinanceiroPage() {
                             </span>
                           </div>
                         </div>
-                      </div>
+        
+                        <div className="venda-header-actions-col">
+                          <span className="chevron-mobile block sm:hidden" style={{ marginBottom: 4 }}>{expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}</span>
+                          {/* Mobile: botões abaixo do chevron */}
+                          {isAuthenticated && (
+                            <div className="venda-header-actions-mobile-btns block sm:hidden" style={{ marginTop: 0 }}>
+                              <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute" title="Distribuir ganhos">
+                                <Users2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete" title="Remover venda">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
 
-                      <div className="flex items-center venda-header-actions-desktop">
-                        {isAuthenticated && (
-                          <>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute px-1" title="Distribuir ganhos">
-                              <Users2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit px-1">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete px-1" title="Remover venda">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        <span className="chevron-desktop">{expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}</span>
-                      </div>
-
-                      {/* Mobile: Chevron */}
-                      <div className="venda-header-actions-mobile">
-                        <span className="chevron-mobile">{expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}</span>
-                        {isAuthenticated && (
-                          <div className="venda-header-actions-mobile-btns">
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute" title="Distribuir ganhos">
-                              <Users2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit">
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete" title="Remover venda">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {/* Desktop: chevron e botões lado a lado */}
+                          <div className="venda-header-actions-desktop hidden sm:flex items-center">
+                            {isAuthenticated && (
+                              <>
+                                <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute px-1" title="Distribuir ganhos">
+                                  <Users2 className="w-4 h-4" />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); requireAuth(() => { setEditingVenda(venda); setModalVenda(true); }); }} className="action-btn action-btn--edit px-1">
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDeleteTarget(venda)); }} className="action-btn action-btn--delete px-1" title="Remover venda">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                            <span className="chevron-desktop">{expanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}</span>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
                     {expanded && venda.itens.length > 0 && (

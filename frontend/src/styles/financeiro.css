@@ -339,18 +339,23 @@
   .venda-header-actions-desktop {
     display: none;
   }
-  .venda-header-actions-mobile {
-    display: flex;
+  .venda-header-actions-col {
+    display: flex !important;
     flex-direction: column;
     align-items: flex-end;
-    gap: 2px;
+    min-width: 48px;
+    width: auto;
     margin-left: auto;
   }
   .chevron-mobile {
+    display: block;
     margin-bottom: 2px;
+    margin-right: 0;
+    align-self: flex-end;
   }
   .venda-header-actions-mobile-btns {
     display: flex;
     gap: 2px;
+    align-self: flex-end;
   }
 }
