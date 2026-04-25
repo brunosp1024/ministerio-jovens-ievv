@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, extract
+from datetime import date
 from typing import Optional, List
 from app.models.evento import Evento
 from app.schemas.evento import EventoCreate, EventoUpdate
@@ -9,10 +10,11 @@ class EventoService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_all(self, skip: int = 0, limit: int = 100) -> List[Evento]:
-        result = await self.db.execute(
-            select(Evento).order_by(Evento.data_evento.desc()).offset(skip).limit(limit)
-        )
+    async def get_all(self, skip: int = 0, limit: int = 100, ano: int | None = None) -> List[Evento]:
+        if not ano:
+            ano = date.today().year
+        query = select(Evento).where(extract("year", Evento.data_evento) == ano).order_by(Evento.data_evento.desc()).offset(skip).limit(limit)
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def get_by_id(self, evento_id: int) -> Optional[Evento]:

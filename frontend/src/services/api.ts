@@ -43,7 +43,7 @@ export const jovensApi = {
 
 // ─── Eventos ─────────────────────────────────────────────────────────────────
 export const eventosApi = {
-  listar: () => api.get<Evento[]>("/eventos/").then((r) => r.data),
+  listar: (ano?: number) => api.get<Evento[]>("/eventos/", { params: ano ? { ano } : {} }).then((r) => r.data),
   buscar: (id: number) => api.get<Evento>(`/eventos/${id}`).then((r) => r.data),
   criar: (data: EventoCreate) => api.post<Evento>("/eventos/", data).then((r) => r.data),
   atualizar: (id: number, data: EventoUpdate) => api.put<Evento>(`/eventos/${id}`, data).then((r) => r.data),

@@ -12,10 +12,11 @@ router = APIRouter(prefix="/eventos", tags=["eventos"])
 async def listar_eventos(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=200),
+    ano: int | None = Query(None, ge=2000),
     db: AsyncSession = Depends(get_db),
 ):
     service = EventoService(db)
-    return await service.get_all(skip=skip, limit=limit)
+    return await service.get_all(skip=skip, limit=limit, ano=ano)
 
 
 @router.get("/{evento_id}", response_model=EventoResponse)

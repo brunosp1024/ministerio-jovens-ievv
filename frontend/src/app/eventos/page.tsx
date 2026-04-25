@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { Controller, useForm } from "react-hook-form";
 import { useAuth } from "@/contexts/AuthContext";
+import { anoAtual } from "@/lib/utils";
 
 export default function EventosPage() {
   const qc = useQueryClient();
@@ -22,8 +23,15 @@ export default function EventosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Evento | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Evento | null>(null);
+  const [ano, setAno] = useState<number>(anoAtual());
 
-  const { data: eventos = [], isLoading } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
+  // Gera lista de anos para o filtro (exibe últimos 5 anos)
+  const anos = Array.from({ length: 5 }, (_, i) => anoAtual() - i);
+
+  const { data: eventos = [], isLoading } = useQuery({
+    queryKey: ["eventos", ano],
+    queryFn: () => eventosApi.listar(ano),
+  });
 
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm<EventoCreate>();
 
@@ -114,9 +122,17 @@ export default function EventosPage() {
           <h1 className="page-title"><Calendar className="page-title__icon" /> Eventos</h1>
           <p className="page-subtitle">{eventos.length} {eventos.length === 1 ? "evento cadastrado" : "eventos cadastrados"}</p>
         </div>
-        {isAuthenticated && (
-          <Button onClick={() => requireAuth(openCreate)}><Plus className="w-4 h-4" /> Novo Evento</Button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Select
+            value={ano}
+            onChange={e => setAno(Number(e.target.value))}
+            options={anos.map(a => ({ label: String(a), value: a }))}
+            style={{ minWidth: 100 }}
+          />
+          {isAuthenticated && (
+            <Button onClick={() => requireAuth(openCreate)}><Plus className="w-4 h-4" /> Novo Evento</Button>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
