@@ -161,7 +161,7 @@ export default function JovensPage() {
         {isAuthenticated && (
           <div className="flex gap-2">
             <Button onClick={openCreate}><Plus className="w-4 h-4" /> Novo Jovem</Button>
-            <Button variant="outline" onClick={exportarCSV}><Download className="w-4 h-4" /> Exportar CSV</Button>
+            <Button variant="outline" onClick={exportarCSV}><Download className="w-4 h-4" /> Exportar</Button>
           </div>
         )}
       </div>
