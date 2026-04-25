@@ -39,6 +39,8 @@ class FinanceiroService:
         ano: Optional[int] = None,
         evento_id: Optional[int] = None,
     ) -> List[VendaSemanal]:
+        if not (semana_inicio or semana_fim or mes or ano):
+            ano = date.today().year
         query = select(VendaSemanal).options(selectinload(VendaSemanal.itens)).where(VendaSemanal.ativo == True)
         if semana_inicio:
             query = query.where(VendaSemanal.semana_inicio >= semana_inicio)

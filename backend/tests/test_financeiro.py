@@ -43,10 +43,17 @@ async def test_criar_venda(client: AsyncClient):
 
 
 async def test_listar_vendas(client: AsyncClient):
-    await criar_venda(client)
+    from datetime import date
+    ano_corrente = date.today().year
+    await criar_venda(client, semana_inicio=f"{ano_corrente}-06-02", semana_fim=f"{ano_corrente}-06-08")
+    # Testa sem filtro (deve trazer vendas do ano corrente)
     response = await client.get("/api/v1/financeiro/vendas")
     assert response.status_code == 200
     assert len(response.json()) >= 1
+    # Testa filtro de ano diferente (não deve trazer vendas)
+    response = await client.get(f"/api/v1/financeiro/vendas?ano={ano_corrente-1}")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
 
 
 async def test_listar_vendas_filtro_mes(client: AsyncClient):
