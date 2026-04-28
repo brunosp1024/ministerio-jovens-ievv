@@ -21,7 +21,10 @@ interface Props {
 }
 
 export default function VendaForm({ editing, onSuccess, onCancel }: Props) {
-  const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
+  const { data: eventos = [] } = useQuery<Evento[]>({
+    queryKey: ["eventos"],
+    queryFn: ({ queryKey }) => eventosApi.listar(),
+  });
   const { register, handleSubmit, control, getValues, setValue } = useForm<VendaSemanalCreate>({
     defaultValues: editing
       ? {
