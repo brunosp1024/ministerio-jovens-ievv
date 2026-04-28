@@ -134,6 +134,13 @@ export interface ResumoCaixaResponse {
   updated_at: string;
 }
 
+export interface VendaGanhoJovem {
+  venda_id: number;
+  periodo: string;
+  lucro_total: number;
+  valor_distribuido: number;
+}
+
 // ─── Notificação ─────────────────────────────────────────────────────────────
 export interface Notificacao {
   id: number;

@@ -110,6 +110,11 @@ async def distribuir_ganhos(
     ganhos = await service.distribuir_ganhos(data)
     return {"message": f"{len(ganhos)} distribuição(ões) registrada(s)", "total": len(ganhos)}
 
+@router.get("/jovens/{jovem_id}/vendas-ganhos")
+async def vendas_ganhos_por_jovem(jovem_id: int, db: AsyncSession = Depends(get_db)):
+    service = FinanceiroService(db)
+    return await service.get_vendas_ganhos_por_jovem(jovem_id)
+
 @router.post("/ganho-manual", status_code=201)
 async def adicionar_ganho_manual(
     data: GanhoManualRequest,

@@ -8,7 +8,7 @@ import type {
   ResumoFinanceiro, FiltroVendas,
   Notificacao,
   AuthSession, AuthUser, LoginPayload,
-  ResumoCaixaResponse,
+  ResumoCaixaResponse, VendaGanhoJovem
 } from "@/types";
 
 const api = axios.create({
@@ -74,6 +74,8 @@ export const financeiroApi = {
   zerarGanhos: () => api.post<{ message: string }>("/financeiro/zerar-ganhos").then((r) => r.data),
   adicionarGanhoManual: (jovem_id: number, valor: string | number) =>
     api.post<{ message: string; id: number }>("/financeiro/ganho-manual", { jovem_id, valor }).then((r) => r.data),
+  vendasGanhosPorJovem: (jovem_id: number) =>
+    api.get<VendaGanhoJovem[]>(`/financeiro/jovens/${jovem_id}/vendas-ganhos`).then((r) => r.data),
 };
 
 // ─── Notificações ─────────────────────────────────────────────────────────────

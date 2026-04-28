@@ -14,10 +14,12 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import toast from "react-hot-toast";
 import VendaForm from "@/components/financeiro/VendaForm";
 import DistribuirGanhosModal from "@/components/financeiro/DistribuirGanhosModal";
-import { VendaSemanal } from "@/types";
+import { VendaSemanal, VendaGanhoJovem } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import Select from "@/components/ui/Select";
 import CurrencyInput from "@/components/ui/CurrencyInput";
+
+
 export default function FinanceiroPage() {
   const [tab, setTab] = useState<'ganhos' | 'arrecadacoes'>('ganhos');
   const [confirmZerar, setConfirmZerar] = useState(false);
@@ -34,7 +36,7 @@ export default function FinanceiroPage() {
   const [deleteTarget, setDeleteTarget] = useState<VendaSemanal | null>(null);
   const [distribuirVenda, setDistribuirVenda] = useState<VendaSemanal | null>(null);
   const [expandedVendas, setExpandedVendas] = useState<Set<number>>(new Set());
-
+  const [expandedJovem, setExpandedJovem] = useState<number | null>(null);
   const [isEditResumo, setIsEditResumo] = useState(false);
   const [eventoAlvo, setEventoAlvo] = useState("");
   const { data: eventos = [] } = useQuery({
@@ -148,6 +150,61 @@ export default function FinanceiroPage() {
     }
     action();
   }
+
+  // Chama o hook de vendasGanhos apenas para o jovem expandido
+  // Hook sempre chamado, mas só busca se houver jovem expandido
+  const vendasGanhosQuery = useQuery<VendaGanhoJovem[]>({
+    queryKey: ["vendas-ganhos-jovem", expandedJovem],
+    queryFn: () => expandedJovem ? financeiroApi.vendasGanhosPorJovem(expandedJovem) : Promise.resolve([]),
+    enabled: !!expandedJovem,
+  });
+
+  // Funções auxiliares para operação
+  const iniciarOperacao = (jovemId: number, tipo: "add" | "sub") => {
+    setJovemOperando(jovemId);
+    setTipoOperacao(tipo);
+    setValorOperacao("");
+  };
+
+  const cancelarOperacao = () => {
+    setJovemOperando(null);
+    setTipoOperacao(null);
+    setValorOperacao("");
+  };
+
+  const salvarOperacao = async (jovemId: number) => {
+    setSalvando(true);
+    try {
+      const valor = parseFloat(valorOperacao.replace(",", "."));
+      if (isNaN(valor) || valor === 0) {
+        toast.error("Informe um valor válido");
+        setSalvando(false);
+        return;
+      }
+      const valorFinal = tipoOperacao === "sub" ? -Math.abs(valor) : Math.abs(valor);
+      await financeiroApi.adicionarGanhoManual(jovemId, valorFinal);
+      qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
+      toast.success("Operação registrada!");
+      cancelarOperacao();
+    } catch (e) {
+      toast.error("Erro ao registrar operação");
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const formatePeriodo = (periodo: string) => {
+    if (periodo && periodo.includes(' - ')) {
+      const [ini, fim] = periodo.split(' - ');
+      const format = (d: string) => {
+        const parts = d.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}`;
+        return d;
+      };
+      return `${format(ini)} - ${format(fim)}`;
+    }
+    return periodo;
+  };
 
   return (
     <div className="page">
@@ -351,16 +408,18 @@ export default function FinanceiroPage() {
       {/* Tabs */}
       <div className="tabs flex gap-2">
         <button
-          className={`tab-btn px-4 pt-2 pb-6 rounded-t-md font-semibold w-full sm:w-auto ${tab === 'ganhos' ? 'bg-white text-blue-600' : 'bg-slate-100 text-slate-500'}`}
+          className={`tab-btn px-4 py-4 rounded-t-md font-semibold w-full sm:w-auto flex items-center gap-2 ${tab === 'ganhos' ? 'bg-white text-blue-600' : 'bg-slate-100 text-slate-500'}`}
           onClick={() => setTab('ganhos')}
         >
-          Ganhos por Jovem
+          <Users2 className="ganhos-header__icon" />
+          <span>Caixa Jovem</span>
         </button>
         <button
-          className={`tab-btn px-4 pt-2 pb-6 rounded-t-md font-semibold w-full sm:w-auto ${tab === 'arrecadacoes' ? 'bg-white text-blue-600' : 'bg-slate-100 text-slate-500'}`}
+          className={`tab-btn px-4 py-4 rounded-t-md font-semibold w-full sm:w-auto flex items-center gap-2 ${tab === 'arrecadacoes' ? 'bg-white text-blue-600' : 'bg-slate-100 text-slate-500'}`}
           onClick={() => setTab('arrecadacoes')}
         >
-          Arrecadações
+          <DollarSign className="ganhos-header__icon" />
+          <span> Arrecadações</span>
         </button>
       </div>
 
@@ -369,10 +428,6 @@ export default function FinanceiroPage() {
         // --- Ganhos por Jovem ---
         <div className="card" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, boxShadow: 'none', borderTop: 'none' }}>
           <div className="ganhos-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Users2 className="ganhos-header__icon" />
-              <h2 className="section-title--base">Caixa individual</h2>
-            </div>
             {user?.role === "admin" && (
               <Button
                 variant="outline"
@@ -380,7 +435,7 @@ export default function FinanceiroPage() {
                 onClick={() => requireAuth(() => setConfirmZerar(true))}
                 disabled={zerarGanhosMut.isPending}
                 title="Zerar todas as receitas dos jovens"
-                style={{ marginLeft: "auto" }}
+                style={{ marginRight: "auto" }}
               >
                 Zerar Receitas
               </Button>
@@ -389,210 +444,277 @@ export default function FinanceiroPage() {
           {jovensHab.length === 0 ? (
             <p className="empty-state">Nenhum jovem habilitado financeiramente.</p>
           ) : (
-            (() => {
-              const iniciarOperacao = (jovemId: number, tipo: "add" | "sub") => {
-                setJovemOperando(jovemId);
-                setTipoOperacao(tipo);
-                setValorOperacao("");
-              };
-              const cancelarOperacao = () => {
-                setJovemOperando(null);
-                setTipoOperacao(null);
-                setValorOperacao("");
-              };
-              const salvarOperacao = async (jovemId: number) => {
-                setSalvando(true);
-                try {
-                  const valor = parseFloat(valorOperacao.replace(",", "."));
-                  if (isNaN(valor) || valor === 0) {
-                    toast.error("Informe um valor válido");
-                    setSalvando(false);
-                    return;
-                  }
-                  const valorFinal = tipoOperacao === "sub" ? -Math.abs(valor) : Math.abs(valor);
-                  await financeiroApi.adicionarGanhoManual(jovemId, valorFinal);
-                  qc.invalidateQueries({ queryKey: ["ganhos-mensais"] });
-                  toast.success("Operação registrada!");
-                  cancelarOperacao();
-                } catch (e) {
-                  toast.error("Erro ao registrar operação");
-                } finally {
-                  setSalvando(false);
-                }
-              };
-              return (
-                <>
-                  {/* Tabela para desktop */}
-                  <div className="ganhos-table-desktop">
-                    <table className="data-table">
-                      <thead>
-                        <tr className="data-table__head-row">
-                          <th className="data-table__head-cell">Jovem</th>
-                          <th className="data-table__head-cell--right">Total arrecadado</th>
-                          {user?.role === "admin" && <th className="data-table__head-cell--right pr-5">Ações</th>}
-                        </tr>
-                      </thead>
-                      <tbody className="data-table__body">
-                        {ganhosOrdenados.map((g, idx) => {
-                          const temValor = parseFloat(g.total_mensal) > 0;
-                          const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
-                          const operando = jovemOperando === g.jovem_id;
-                          return (
-                            <tr key={g.jovem_id} className={`data-table__row${classe ? ` ${classe}` : ""}`}>
-                              <td className="data-table__cell">
-                                <div className="flex items-center gap-2">
-                                  <div className="data-table__avatar--sm data-table__avatar--purple">
-                                    {g.jovem_nome.charAt(0)}
-                                  </div>
-                                  <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
-                                  {temValor && classe && idx < 3 ? (
-                                    <span
-                                      className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
-                                      title={`Medalha de ${idx + 1}º lugar`}
-                                      style={{ display: 'inline-flex', alignItems: 'center' }}
-                                    >
-                                      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
-                                        <g style={{borderBottom: "1px solid black"}}>
-                                          <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
-                                          <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
-                                        </g>
-                                        {/* Medalha */}
-                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
-                                        <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
-                                        <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
-                                      </svg>
-                                    </span>
-                                  ) : temValor && classe ? (
-                                    <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="data-table__cell--right font-semibold text-green-600">
-                                {formatCurrency(g.total_mensal)}
-                              </td>
-                              {user?.role === "admin" && (
-                                <td className="data-table__cell--right">
-                                  {operando ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
-                                      <CurrencyInput
-                                        value={valorOperacao}
-                                        onValueChange={setValorOperacao}
-                                        className="input-inline-edit"
-                                        style={{ color: tipoOperacao === "add" ? "green" : "red"  }}
-                                        disabled={salvando}
-                                        placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
-                                      />
-                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
-                                        <Check className="w-4 h-4" />
-                                      </Button>
-                                      <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
-                                        <X className="w-4 h-4" />
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
-                                        +
-                                      </Button>
-                                      <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
-                                        -
-                                      </Button>
-                                    </>
-                                  )}
-                                </td>
-                              )}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      <tfoot>
-                        <tr className="data-table__footer-row">
-                          <td className="data-table__footer-cell">Total</td>
-                          <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
-                          {isAuthenticated && <td />}
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                  {/* Cards para mobile */}
-                  <div className="ganhos-grid-responsive">
+            <>
+              {/* Tabela para desktop */}
+              <div className="ganhos-table-desktop">
+                <table className="data-table">
+                  <thead>
+                    <tr className="data-table__head-row">
+                      <th className="data-table__head-cell">Jovem</th>
+                      <th className="data-table__head-cell--right">Total arrecadado</th>
+                      {user?.role === "admin" && <th className="data-table__head-cell--right pr-5">Ações</th>}
+                    </tr>
+                  </thead>
+                  <tbody className="data-table__body">
                     {ganhosOrdenados.map((g, idx) => {
                       const temValor = parseFloat(g.total_mensal) > 0;
                       const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
                       const operando = jovemOperando === g.jovem_id;
+                      const isExpanded = expandedJovem === g.jovem_id;
+                      const vendasGanhos = isExpanded && vendasGanhosQuery?.data ? vendasGanhosQuery.data : [];
+                      const loadingGanhos = isExpanded && vendasGanhosQuery ? vendasGanhosQuery.isLoading : false;
                       return (
-                        <div key={g.jovem_id} className={`ganho-card ${classe}`.trim()}>
-                          <div className="ganho-card__header-mobile">
-                            <div className="data-table__avatar--sm data-table__avatar--purple">
-                              {g.jovem_nome.charAt(0)}
-                            </div>
-                            <div className="ganho-card__header-mobile-nome">
-                              <span className="jovem__name">{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
-                              {temValor && classe && idx < 3 ? (
-                                    <span
-                                      className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
-                                      title={`Medalha de ${idx + 1}º lugar`}
-                                      style={{ display: 'inline-flex', alignItems: 'center' }}
-                                    >
-                                      <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
-                                        {/* Faixa/fita abaixo do círculo */}
-                                        <g>
-                                          <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
-                                          <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
-                                        </g>
-                                        {/* Medalha */}
-                                        <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
-                                        <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
-                                        <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
-                                      </svg>
-                                    </span>
-                                  ) : temValor && classe ? (
-                                    <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
-                                  ) : null}
-                            </div>
-                          </div>
-                          <div className="ganho-card__value font-semibold text-green-600">
-                            <span style={{color: "grey", fontSize: 15}}>Total arrecadado:</span> {formatCurrency(g.total_mensal)}
-                          </div>
-                          {user?.role === "admin" && (
-                            <div className="ganho-card__actions">
-                              {operando ? (
-                                <div className="ganho-card__edit-row">
-                                  <CurrencyInput
-                                    value={valorOperacao}
-                                    onValueChange={setValorOperacao}
-                                    className="input-inline-edit"
-                                    style={{ width: 90, textAlign: "right", color: tipoOperacao === "add" ? "green" : "red" }}
-                                    disabled={salvando}
-                                    placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
-                                  />
-                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
-                                    <Check className="w-4 h-4" />
-                                  </Button>
-                                  <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
-                                    <X className="w-4 h-4" />
-                                  </Button>
+                        <>
+                          <tr
+                            key={g.jovem_id}
+                            className={`data-table__row${classe ? ` ${classe}` : ""} ${isExpanded ? "expanded-row" : ""}`}
+                            style={{ cursor: 'pointer', background: isExpanded ? '#f3f6fa' : undefined, transition: 'background 0.2s' }}
+                            onClick={() => setExpandedJovem(isExpanded ? null : g.jovem_id)}
+                          >
+                            <td className="data-table__cell">
+                              <div className="flex items-center gap-2">
+                                <div className="data-table__avatar--sm data-table__avatar--purple" style={{ boxShadow: isExpanded ? '0 0 0 2px #2563eb' : undefined, transition: 'box-shadow 0.2s' }}>
+                                  {g.jovem_nome.charAt(0)}
                                 </div>
-                              ) : (
-                                <div className="ganho-card__btn-row">
-                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
-                                    +
-                                  </Button>
-                                  <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
-                                    -
-                                  </Button>
+                                <span className="jovem__name font-semibold" style={{ color: isExpanded ? '#2563eb' : undefined }}>{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
+                                {/* Ícone de expandir/colapsar */}
+                                <span style={{ marginLeft: 4, display: 'flex', alignItems: 'center' }}>
+                                  {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-600" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                                </span>
+                                {temValor && classe && idx < 3 ? (
+                                  <span
+                                    className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
+                                    title={`Medalha de ${idx + 1}º lugar`}
+                                    style={{ display: 'inline-flex', alignItems: 'center' }}
+                                  >
+                                    <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
+                                      <g style={{borderBottom: "1px solid black"}}>
+                                        <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                        <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                      </g>
+                                      {/* Medalha */}
+                                      <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                      <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
+                                      <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
+                                    </svg>
+                                  </span>
+                                ) : temValor && classe ? (
+                                  <span className={`ranking-badge ranking-badge--${classe}`}>{idx + 1}º</span>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="data-table__cell--right font-semibold text-green-600">
+                              {formatCurrency(g.total_mensal)}
+                            </td>
+                            {user?.role === "admin" && (
+                              <td className="data-table__cell--right">
+                                {operando ? (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
+                                    <CurrencyInput
+                                      value={valorOperacao}
+                                      onValueChange={setValorOperacao}
+                                      className="input-inline-edit"
+                                      style={{ color: tipoOperacao === "add" ? "green" : "red"  }}
+                                      disabled={salvando}
+                                      placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
+                                    />
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                                      <Check className="w-4 h-4" />
+                                    </Button>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                      +
+                                    </Button>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                      -
+                                    </Button>
+                                  </>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={user?.role === "admin" ? 3 : 2} style={{ background: '#eaf1fb', padding: 0, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 }}>
+                                <div style={{ padding: 18, borderLeft: '3px solid #2563eb', borderRadius: 8, background: '#f7fafd', boxShadow: '0 2px 8px 0 #e0e7ef33' }}>
+                                  <strong style={{ color: '#2563eb', fontWeight: 600 }}>Vendas que participou:</strong>
+                                  {loadingGanhos ? (
+                                    <div style={{ color: '#888', fontSize: 14, marginTop: 8 }}>Carregando...</div>
+                                  ) : !vendasGanhos || vendasGanhos.length === 0 ? (
+                                    <div style={{ color: '#888', fontSize: 14, marginTop: 8 }}>Nenhuma venda encontrada.</div>
+                                  ) : (
+                                    <table style={{ width: '100%', marginTop: 8 }}>
+                                      <thead>
+                                        <tr style={{ fontWeight: 600, fontSize: 14, color: '#2563eb', background: '#f1f5fb' }}>
+                                          <td className="text-left pl-2">Período</td>
+                                          <td className="text-center">Lucro total</td>
+                                          <td className="text-right pr-2">Valor distribuído</td>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {vendasGanhos.map((v) => (
+                                          <tr key={v.venda_id} style={{ fontSize: 14 }}>
+                                            <td className="text-left pl-2">{formatePeriodo(v.periodo)}</td>
+                                            <td className="text-center">{formatCurrency(v.lucro_total)}</td>
+                                            <td className="text-right pr-2">{formatCurrency(v.valor_distribuido)}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  )}
                                 </div>
-                              )}
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      );
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="data-table__footer-row">
+                      <td className="data-table__footer-cell">Total</td>
+                      <td className="data-table__footer-cell--right">{formatCurrency(totalGanhosMensais)}</td>
+                      {isAuthenticated && <td />}
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              {/* Cards para mobile */}
+              <div className="ganhos-grid-responsive">
+                {ganhosOrdenados.map((g, idx) => {
+                  const temValor = parseFloat(g.total_mensal) > 0;
+                  const classe = temValor && idx < 5 ? destaqueClasse[idx] : "";
+                  const operando = jovemOperando === g.jovem_id;
+                  const isExpanded = expandedJovem === g.jovem_id;
+                  // Só pega os dados do hook se este jovem está expandido
+                  const vendasGanhos = isExpanded && vendasGanhosQuery?.data ? vendasGanhosQuery.data : [];
+                  const loadingGanhos = isExpanded && vendasGanhosQuery ? vendasGanhosQuery.isLoading : false;
+                  return (
+                    <div
+                      key={g.jovem_id}
+                      className={`ganho-card`.trim() + (isExpanded ? ' ganho-card--expanded' : '')}
+                      style={{
+                        boxShadow: isExpanded ? '0 2px 12px 0 #2563eb22' : '0 1px 4px 0 #e0e7ef33',
+                        border: isExpanded ? '1px solid #2563eb' : '1px solid #e5e7eb',
+                        background: isExpanded ? '#f3f6fa' : '#fff',
+                        transition: 'all 0.2s',
+                        borderRadius: 10,
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => setExpandedJovem(isExpanded ? null : g.jovem_id)}
+                    >
+                      <div className="ganho-card__header-mobile" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div className="data-table__avatar--sm data-table__avatar--purple" style={{ boxShadow: isExpanded ? '0 0 0 2px #2563eb' : undefined, transition: 'box-shadow 0.2s' }}>
+                          {g.jovem_nome.charAt(0)}
+                        </div>
+                        <span className="jovem__name font-semibold" style={{ color: isExpanded ? '#2563eb' : undefined }}>{g.jovem_nome.split(" ").slice(0, 2).join(" ")}</span>
+                        {/* Ícone de expandir/colapsar */}
+                        <span style={{ marginLeft: 2, display: 'flex', alignItems: 'center' }}>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-600" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                        </span>
+                          {temValor && classe && idx < 3 ? (
+                            <span
+                              className={`ranking-badge ranking-badge--${classe} medalha-icon-pos`}
+                              title={`Medalha de ${idx + 1}º lugar`}
+                              style={{ display: 'inline-flex', alignItems: 'center', marginLeft: 'auto', justifyContent: 'flex-end', minWidth: 0 }}
+                            >
+                              <svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: 'middle', marginRight: 2 }}>
+                                {/* Faixa/fita abaixo do círculo */}
+                                <g>
+                                  <rect x="6" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                  <rect x="17" y="26" width="5" height="8" rx="0.2" fill="#bdbdbd" />
+                                </g>
+                                {/* Medalha */}
+                                <circle cx="14" cy="16" r="12" fill={idx === 0 ? '#f7ae01' : idx === 1 ? '#ababab' : '#CD7F32'} stroke="#fff" strokeWidth="2" />
+                                <circle cx="14" cy="16" r="12" fill="none" stroke="#ffb300" strokeWidth="1.5" strokeDasharray="2 2" />
+                                <text x="16" y="21" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#fff">{idx + 1}°</text>
+                              </svg>
+                            </span>
+                          ) : temValor && classe ? (
+                            <span className={`ranking-badge ranking-badge--${classe}`} style={{ marginLeft: 'auto', display: 'inline-flex', justifyContent: 'flex-end', minWidth: 0 }}>{idx + 1}º</span>
+                          ) : null}
+                      </div>
+                      <div className="ganho-card__value font-semibold text-green-600" style={{ marginLeft: 8, marginTop: 2 }}>
+                        <span style={{color: "grey", fontSize: 15}}>Total arrecadado:</span> {formatCurrency(g.total_mensal)}
+                      </div>
+                      <div
+                        className="ganho-card__expandable w-full"
+                        style={{
+                          maxHeight: isExpanded ? 500 : 0,
+                          opacity: isExpanded ? 1 : 0,
+                          overflow: 'hidden',
+                          transition: 'max-height 0.4s cubic-bezier(0.4,0,0.2,1)',
+                          marginTop: 16,
+                        }}
+                      >
+                        <div className="bg-[#f7fafd] rounded-lg p-4 shadow-md w-full mb-2">
+                          <strong className="text-blue-600 font-semibold">Vendas que participou:</strong>
+                          {loadingGanhos ? (
+                            <div className="text-gray-500 text-sm mt-2">Carregando...</div>
+                          ) : !vendasGanhos || vendasGanhos.length === 0 ? (
+                            <div className="text-gray-500 text-sm mt-2">Nenhuma venda encontrada.</div>
+                          ) : (
+                            <table className="w-full mt-2 border-separate border-spacing-0">
+                              <thead>
+                                <tr className="font-semibold text-sm text-blue-600 bg-blue-100">
+                                  <td className="text-left pl-2">Período</td>
+                                  <td className="text-right pr-2">Valor distribuído</td>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {vendasGanhos.map((v) => (
+                                  <tr key={v.venda_id} className="text-sm">
+                                    <td className="text-left pl-2 font-normal">{formatePeriodo(v.periodo)}</td>
+                                    <td className="text-right pr-2 font-normal">{formatCurrency(v.valor_distribuido)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      </div>
+                      {user?.role === "admin" && (
+                        <div className="ganho-card__actions">
+                          {operando ? (
+                            <div className="ganho-card__edit-row">
+                              <CurrencyInput
+                                value={valorOperacao}
+                                onValueChange={setValorOperacao}
+                                className="input-inline-edit"
+                                style={{ width: 90, textAlign: "right", color: tipoOperacao === "add" ? "green" : "red" }}
+                                disabled={salvando}
+                                placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
+                              />
+                              <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="ganho-card__btn-row">
+                              <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                +
+                              </Button>
+                              <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                -
+                              </Button>
                             </div>
                           )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
-              );
-            })()
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       ) : (
@@ -600,7 +722,6 @@ export default function FinanceiroPage() {
         <>
           {/* Lista de vendas semanais */}
           <div className="card" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, boxShadow: 'none', borderTop: 'none' }}>
-            <h2 className="section-title--base">Arrecadações</h2>
             {isLoading ? (
               <p className="loading-state">Carregando...</p>
             ) : vendas.length === 0 ? (

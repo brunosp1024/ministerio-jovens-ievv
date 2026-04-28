@@ -240,6 +240,23 @@ class FinanceiroService:
         )
         return list(result.scalars().all())
 
+    async def get_vendas_ganhos_por_jovem(self, jovem_id: int):
+        result = await self.db.execute(
+            select(VendaSemanal, GanhoJovem)
+            .join(GanhoJovem, GanhoJovem.venda_id == VendaSemanal.id)
+            .where(GanhoJovem.jovem_id == jovem_id)
+            .order_by(VendaSemanal.semana_inicio.desc())
+        )
+        return [
+            {
+                "venda_id": venda.id,
+                "periodo": f"{venda.semana_inicio} - {venda.semana_fim}",
+                "lucro_total": float(venda.lucro_liquido),
+                "valor_distribuido": float(ganho.valor)
+            }
+            for venda, ganho in result.all()
+        ]
+
     async def atualizar_resumo_caixa_manual(self, resumo_data: ResumoCaixaResponse) -> ResumoCaixa:
         resumo = await self.db.execute(select(ResumoCaixa).limit(1))
         resumo_obj = resumo.scalar_one_or_none()
