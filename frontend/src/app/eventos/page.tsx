@@ -126,7 +126,7 @@ export default function EventosPage() {
           <Select
             value={ano}
             onChange={e => setAno(Number(e.target.value))}
-            options={anos.map(a => ({ label: String(a), value: a }))}
+            options={anos.map(a => ({ label: String(a), value: String(a) }))}
             style={{ minWidth: 100 }}
           />
           {user?.role === "admin" && (
