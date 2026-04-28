@@ -156,6 +156,7 @@ export interface FiltroVendas {
 
 export interface AuthUser {
   username: string;
+  role: string;
 }
 
 export interface LoginPayload {

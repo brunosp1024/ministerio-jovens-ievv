@@ -19,7 +19,7 @@ import { anoAtual } from "@/lib/utils";
 
 export default function EventosPage() {
   const qc = useQueryClient();
-  const { isAuthenticated, openLogin } = useAuth();
+  const { isAuthenticated, openLogin, user } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Evento | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Evento | null>(null);
@@ -104,7 +104,7 @@ export default function EventosPage() {
               {evento.local && <span className="evento-card__meta-item"><MapPin className="evento-card__meta-icon" />{evento.local}</span>}
             </div>
           </div>
-          {isAuthenticated && (
+          {user?.role === "admin" && (
             <div className="flex items-center gap-1 shrink-0">
               <button onClick={() => requireAuth(() => openEdit(evento))} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
               <button onClick={() => requireAuth(() => setDeleteTarget(evento))} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
@@ -129,7 +129,7 @@ export default function EventosPage() {
             options={anos.map(a => ({ label: String(a), value: a }))}
             style={{ minWidth: 100 }}
           />
-          {isAuthenticated && (
+          {user?.role === "admin" && (
             <Button onClick={() => requireAuth(openCreate)}><Plus className="w-4 h-4" /> Novo Evento</Button>
           )}
         </div>

@@ -21,7 +21,7 @@ import CurrencyInput from "@/components/ui/CurrencyInput";
 export default function FinanceiroPage() {
   const [confirmZerar, setConfirmZerar] = useState(false);
   const qc = useQueryClient();
-  const { isAuthenticated, openLogin } = useAuth();
+  const { isAuthenticated, openLogin, user } = useAuth();
 
   const [mes, setMes] = useState(mesAtual());
   const [ano, setAno] = useState(anoAtual());
@@ -36,7 +36,13 @@ export default function FinanceiroPage() {
 
   const [isEditResumo, setIsEditResumo] = useState(false);
   const [eventoAlvo, setEventoAlvo] = useState("");
-  const { data: eventos = [] } = useQuery({ queryKey: ["eventos"], queryFn: eventosApi.listar });
+  const { data: eventos = [] } = useQuery({
+    queryKey: ["eventos", ano],
+    queryFn: ({ queryKey }) => {
+      const ano = queryKey[1] !== undefined ? Number(queryKey[1]) : undefined;
+      return eventosApi.listar(ano);
+    }
+  });
   const [resumoEdit, setResumoEdit] = useState({
     total_caixa: "",
     total_dinheiro: "",
@@ -153,7 +159,7 @@ export default function FinanceiroPage() {
             </h1>
             <p className="page-subtitle">Controle de vendas e distribuição de ganhos</p>
           </div>
-          {isAuthenticated && (
+          {user?.role === "admin" && (
             <Button onClick={() => requireAuth(() => { setEditingVenda(null); setModalVenda(true); })}>
               <Plus className="w-4 h-4" /> Nova Venda
             </Button>
@@ -166,7 +172,7 @@ export default function FinanceiroPage() {
             <Banknote className="w-10 h-10 text-emerald-500" />
             <h2>Resumo do Caixa</h2>
             <hr />
-            {isAuthenticated && (
+            {user?.role === "admin" && (
               <div className="form-actions" style={{ margin: 0, display: "flex", gap: 8 }}>
                 {isEditResumo && (
                   <Button variant="outline" type="button" onClick={() => {
@@ -375,7 +381,7 @@ export default function FinanceiroPage() {
                         <div className="venda-header-actions-col">
                           <span className="chevron-mobile block sm:hidden" style={{ marginBottom: 4 }}>{expanded ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}</span>
                           {/* Mobile: botões abaixo do chevron */}
-                          {isAuthenticated && (
+                          {user?.role === "admin" && (
                             <div className="venda-header-actions-mobile-btns block sm:hidden" style={{ marginTop: 0 }}>
                               <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute" title="Distribuir ganhos">
                                 <Users2 className="w-4 h-4" />
@@ -391,7 +397,7 @@ export default function FinanceiroPage() {
 
                           {/* Desktop: chevron e botões lado a lado */}
                           <div className="venda-header-actions-desktop hidden sm:flex items-center">
-                            {isAuthenticated && (
+                            {user?.role === "admin" && (
                               <>
                                 <button onClick={(e) => { e.stopPropagation(); requireAuth(() => setDistribuirVenda(venda)); }} className="action-btn action-btn--distribute px-1" title="Distribuir ganhos">
                                   <Users2 className="w-4 h-4" />
@@ -452,7 +458,7 @@ export default function FinanceiroPage() {
               <Users2 className="ganhos-header__icon" />
               <h2 className="section-title--base">Caixa individual</h2>
             </div>
-            {isAuthenticated && (
+            {user?.role === "admin" && (
               <Button
                 variant="outline"
                 color="red"
@@ -508,7 +514,7 @@ export default function FinanceiroPage() {
                         <tr className="data-table__head-row">
                           <th className="data-table__head-cell">Jovem</th>
                           <th className="data-table__head-cell--right">Total arrecadado</th>
-                          {isAuthenticated && <th className="data-table__head-cell--right pr-5">Ações</th>}
+                          {user?.role === "admin" && <th className="data-table__head-cell--right pr-5">Ações</th>}
                         </tr>
                       </thead>
                       <tbody className="data-table__body">
@@ -549,7 +555,7 @@ export default function FinanceiroPage() {
                               <td className="data-table__cell--right font-semibold text-green-600">
                                 {formatCurrency(g.total_mensal)}
                               </td>
-                              {isAuthenticated && (
+                              {user?.role === "admin" && (
                                 <td className="data-table__cell--right">
                                   {operando ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', width: '100%' }}>
@@ -634,7 +640,7 @@ export default function FinanceiroPage() {
                           <div className="ganho-card__value font-semibold text-green-600">
                             <span style={{color: "grey", fontSize: 15}}>Total arrecadado:</span> {formatCurrency(g.total_mensal)}
                           </div>
-                          {isAuthenticated && (
+                          {user?.role === "admin" && (
                             <div className="ganho-card__actions">
                               {operando ? (
                                 <div className="ganho-card__edit-row">

@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-key"
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "admin123"
+    VIEWER_USERNAME: str = "viewer"
+    VIEWER_PASSWORD: str = "viewer123"
     ACCESS_TOKEN_EXPIRE_HOURS: int = 12
     ENVIRONMENT: str = "development"
     ALLOWED_ORIGINS: List[str] = Field(default_factory=list)

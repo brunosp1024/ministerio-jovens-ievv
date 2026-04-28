@@ -27,16 +27,24 @@ def _sign(encoded_payload: str) -> str:
 
 
 def verify_credentials(username: str, password: str) -> bool:
-    return hmac.compare_digest(username, settings.ADMIN_USERNAME) and hmac.compare_digest(
-        password,
-        settings.ADMIN_PASSWORD,
-    )
+    if hmac.compare_digest(username, settings.ADMIN_USERNAME) and hmac.compare_digest(password, settings.ADMIN_PASSWORD):
+        return "admin"
+    if hmac.compare_digest(username, settings.VIEWER_USERNAME) and hmac.compare_digest(password, settings.VIEWER_PASSWORD):
+        return "viewer"
+    return None
 
 
 def create_access_token(username: str) -> str:
+    if username == settings.ADMIN_USERNAME:
+        role = "admin"
+    elif username == settings.VIEWER_USERNAME:
+        role = "viewer"
+    else:
+        role = "user"
     expires_at = datetime.now(timezone.utc) + timedelta(hours=settings.ACCESS_TOKEN_EXPIRE_HOURS)
     payload = {
         "sub": username,
+        "role": role,
         "exp": int(expires_at.timestamp()),
     }
     encoded_payload = _encode_payload(payload)
@@ -61,10 +69,11 @@ def decode_access_token(token: str) -> str | None:
 
     expires_at = payload.get("exp")
     username = payload.get("sub")
+    role = payload.get("role", "user")
     if not isinstance(expires_at, int) or not isinstance(username, str):
         return None
 
     if datetime.now(timezone.utc).timestamp() > expires_at:
         return None
 
-    return username
+    return {"username": username, "role": role}

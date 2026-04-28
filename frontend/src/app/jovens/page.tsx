@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function JovensPage() {
   const qc = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Jovem | null>(null);
@@ -158,7 +158,7 @@ export default function JovensPage() {
           <h1 className="page-title"><Users className="page-title__icon" /> Jovens</h1>
           <p className="page-subtitle">{jovens.length} {jovens.length === 1 ? "jovem cadastrado" : "jovens cadastrados"}</p>
         </div>
-        {isAuthenticated && (
+        {user?.role === "admin" && (
           <div className="flex gap-2">
             <Button onClick={openCreate}><Plus className="w-4 h-4" /> Novo Jovem</Button>
             <Button variant="outline" onClick={exportarCSV}><Download className="w-4 h-4" /> Exportar</Button>
@@ -246,7 +246,7 @@ export default function JovensPage() {
                           <Badge bgColor={faixa.color} textColor="#fff">{faixa.label}</Badge>
                         </div>
                       </div>
-                      {isAuthenticated && (
+                      {user?.role === "admin" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", justifyContent: "flex-start" }}>
                           <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>
                           <button onClick={() => setDeleteTarget(j)} className="action-btn action-btn--delete"><Trash2 className="w-4 h-4" /></button>
@@ -270,7 +270,7 @@ export default function JovensPage() {
                       "Faixa Etária",
                       "Financeiro",
                       "Status",
-                      ...(isAuthenticated ? ["Ações"] : [])
+                      ...(user?.role === "admin" ? ["Ações"] : [])
                     ].map((h) => (
                       <th key={typeof h === "string" ? h : h.key} className="data-table__head-cell">{h}</th>
                     ))}
@@ -319,7 +319,7 @@ export default function JovensPage() {
                         <td className="py-3 pr-4">
                           <span className={j.ativo ? "badge-green" : "badge-red"}>{j.ativo ? "Ativo" : "Inativo"}</span>
                         </td>
-                        {isAuthenticated && (
+                        {user?.role === "admin" && (
                           <td className="py-3">
                             <div className="flex items-center gap-1">
                               <button onClick={() => openEdit(j)} className="action-btn action-btn--edit"><Pencil className="w-4 h-4" /></button>

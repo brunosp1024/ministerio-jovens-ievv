@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
-from app.api.deps import get_current_username, get_db
+from app.api.deps import get_current_user, get_db
 from app.services.jovem_service import JovemService
 from app.schemas.jovem import JovemCreate, JovemUpdate, JovemResponse
 
@@ -44,8 +44,10 @@ async def buscar_jovem(jovem_id: int, db: AsyncSession = Depends(get_db)):
 async def criar_jovem(
     data: JovemCreate,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    if user["role"] == "viewer":
+        raise HTTPException(status_code=403, detail="Usuário sem permissão para criar")
     service = JovemService(db)
     return await service.create(data)
 
@@ -55,8 +57,10 @@ async def atualizar_jovem(
     jovem_id: int,
     data: JovemUpdate,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    if user["role"] == "viewer":
+        raise HTTPException(status_code=403, detail="Usuário sem permissão para editar")
     service = JovemService(db)
     jovem = await service.update(jovem_id, data)
     if not jovem:
@@ -68,8 +72,10 @@ async def atualizar_jovem(
 async def deletar_jovem(
     jovem_id: int,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    if user["role"] == "viewer":
+        raise HTTPException(status_code=403, detail="Usuário sem permissão para deletar")
     service = JovemService(db)
     deleted = await service.delete(jovem_id)
     if not deleted:

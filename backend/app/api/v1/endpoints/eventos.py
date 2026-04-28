@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-from app.api.deps import get_current_username, get_db
+from app.api.deps import get_current_user, get_db
 from app.services.evento_service import EventoService
 from app.schemas.evento import EventoCreate, EventoUpdate, EventoResponse
 
+
 router = APIRouter(prefix="/eventos", tags=["eventos"])
 
+def _forbid_viewer(user):
+    if user["role"] == "viewer":
+        raise HTTPException(status_code=403, detail="Usuário sem permissão para esta ação")
 
 @router.get("/", response_model=List[EventoResponse])
 async def listar_eventos(
@@ -32,8 +36,9 @@ async def buscar_evento(evento_id: int, db: AsyncSession = Depends(get_db)):
 async def criar_evento(
     data: EventoCreate,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    _forbid_viewer(user)
     service = EventoService(db)
     return await service.create(data)
 
@@ -43,8 +48,9 @@ async def atualizar_evento(
     evento_id: int,
     data: EventoUpdate,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    _forbid_viewer(user)
     service = EventoService(db)
     evento = await service.update(evento_id, data)
     if not evento:
@@ -56,8 +62,9 @@ async def atualizar_evento(
 async def deletar_evento(
     evento_id: int,
     db: AsyncSession = Depends(get_db),
-    _: str = Depends(get_current_username),
+    user: dict = Depends(get_current_user),
 ):
+    _forbid_viewer(user)
     service = EventoService(db)
     deleted = await service.delete(evento_id)
     if not deleted:

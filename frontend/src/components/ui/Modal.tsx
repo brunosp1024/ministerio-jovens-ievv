@@ -66,7 +66,7 @@ export default function Modal({ open, onClose, title, children, size = "md" }: M
         )}
       >
         <div className="modal__header">
-          <h2 className="modal__title">{title}</h2>
+          <h2 className="modal__title" style={{ width: '100%', textAlign: 'center' }}>{title}</h2>
           <button onClick={onClose} className="modal__close-btn">
             <X className="modal__close-icon" />
           </button>

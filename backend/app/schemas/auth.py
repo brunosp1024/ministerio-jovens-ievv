@@ -8,6 +8,7 @@ class LoginRequest(BaseModel):
 
 class AuthUserResponse(BaseModel):
     username: str
+    role: str
 
 
 class TokenResponse(BaseModel):
