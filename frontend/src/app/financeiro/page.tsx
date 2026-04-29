@@ -314,8 +314,14 @@ export default function FinanceiroPage() {
 
         {/* Mensagem de inconsistência */}
         {resumoCaixa && parseFloat(resumoCaixa.total_caixa) !== (parseFloat(resumoCaixa.total_dinheiro) + parseFloat(resumoCaixa.total_pix)) && (
-          <span className="resumo-warning">
-            Aviso: Total em caixa diferente da soma de dinheiro e pix.
+          <span className="resumo-warning" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="orange" style={{ marginRight: 4 }}>
+              <circle cx="12" cy="12" r="10" stroke="orange" strokeWidth="2" fill="#fffbe6" />
+              <path stroke="orange" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
+            </svg>
+            <span>
+              <strong>Aviso:</strong> Total em caixa diferente da soma de dinheiro e pix.
+            </span>
           </span>
         )}
       </div>

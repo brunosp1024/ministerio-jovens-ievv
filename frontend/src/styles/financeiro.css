@@ -156,10 +156,13 @@
 }
 
 .card-resumo .resumo-warning {
-  position: absolute;
+  padding: 5px;
   left: 25px;
   bottom: 2px;
   color: #eab308;
+  background: #fff3e4;
+  margin-top: 8px;;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
 }
