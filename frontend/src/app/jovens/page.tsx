@@ -217,7 +217,7 @@ export default function JovensPage() {
                       <div style={{ display: "flex", flexDirection: "column", top: -4 }}>
                         <span style={{ fontWeight: 600, fontSize: 18 }}>{j.nome.split(" ").filter(Boolean).slice(0, 2).join(" ")}</span>
                         <span style={{ display: "inline-block", position: "relative", top: -4 }}>
-                          <Badge bgColor="#fff" textColor="#0d1f3c" fontSize={10}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
+                          <Badge bgColor="#fff" textColor="#0d1f3c" fontSize={10} borderRadius={2}>{perfis.find(p => p.value === j.perfil)?.label ?? '-'}</Badge>
                         </span>
                       </div>
                     </div>
