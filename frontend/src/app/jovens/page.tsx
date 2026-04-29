@@ -238,7 +238,7 @@ export default function JovensPage() {
                         {j.telefone && (
                           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                             <span style={{ fontWeight: 600, color: "#64748b", fontSize: 12 }}>Telefone:</span>
-                            <span style={{ fontSize: 12, opacity: 0.7 }}>{j.telefone}</span>
+                            <span style={{ fontSize: 12, opacity: 0.7 }}>{formatPhone(j.telefone)}</span>
                           </div>
                         )}
                         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
