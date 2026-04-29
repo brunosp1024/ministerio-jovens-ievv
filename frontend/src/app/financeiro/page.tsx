@@ -523,20 +523,21 @@ export default function FinanceiroPage() {
                                       style={{ color: tipoOperacao === "add" ? "green" : "red"  }}
                                       disabled={salvando}
                                       placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
+                                      onClick={e => e.stopPropagation()}
                                     />
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); salvarOperacao(g.jovem_id); }} title="Salvar" disabled={salvando}>
                                       <Check className="w-4 h-4" />
                                     </Button>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); cancelarOperacao(); }} title="Cancelar" disabled={salvando}>
                                       <X className="w-4 h-4" />
                                     </Button>
                                   </div>
                                 ) : (
                                   <>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); iniciarOperacao(g.jovem_id, "add"); }} title="Adicionar valor">
                                       +
                                     </Button>
-                                    <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                                    <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); iniciarOperacao(g.jovem_id, "sub"); }} title="Subtrair valor">
                                       -
                                     </Button>
                                   </>
@@ -696,20 +697,21 @@ export default function FinanceiroPage() {
                                 style={{ width: 90, textAlign: "right", color: tipoOperacao === "add" ? "green" : "red" }}
                                 disabled={salvando}
                                 placeholder={tipoOperacao === "add" ? "+ R$ 0,00" : "- R$ 0,00"}
+                                onClick={e => e.stopPropagation()}
                               />
-                              <Button className="mr-1" size="sm" variant="outline" onClick={() => salvarOperacao(g.jovem_id)} title="Salvar" disabled={salvando}>
+                              <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); salvarOperacao(g.jovem_id); }} title="Salvar" disabled={salvando}>
                                 <Check className="w-4 h-4" />
                               </Button>
-                              <Button className="mr-1" size="sm" variant="outline" onClick={cancelarOperacao} title="Cancelar" disabled={salvando}>
+                              <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); cancelarOperacao(); }} title="Cancelar" disabled={salvando}>
                                 <X className="w-4 h-4" />
                               </Button>
                             </div>
                           ) : (
                             <div className="ganho-card__btn-row">
-                              <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "add")} title="Adicionar valor">
+                              <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); iniciarOperacao(g.jovem_id, "add"); }} title="Adicionar valor">
                                 +
                               </Button>
-                              <Button className="mr-1" size="sm" variant="outline" onClick={() => iniciarOperacao(g.jovem_id, "sub")} title="Subtrair valor">
+                              <Button className="mr-1" size="sm" variant="outline" onClick={e => { e.stopPropagation(); iniciarOperacao(g.jovem_id, "sub"); }} title="Subtrair valor">
                                 -
                               </Button>
                             </div>
